@@ -8,7 +8,7 @@ namespace BOL
 {
     public class Book
     {
-        public long BookId{ get; }
+        public string BookId{ get; }
         public string BookTitle { get; set; }
         public Genre BookGenre { get; set; }
         public Author BookAuthor { get; set; }
@@ -22,6 +22,20 @@ namespace BOL
         public Book( string BookTitle, Genre _Genre, Author _Author, string Description, Publisher _Publisher, 
             int Rating, double Cost, string Thumb, int Stock)
         {
+            this.BookTitle = BookTitle;
+            this.BookGenre = _Genre;
+            this.BookAuthor = _Author;
+            this.BookDescription = Description;
+            this.BookPublisher = _Publisher;
+            this.BookRating = Rating;
+            this.BookCost = Cost;
+            this.BookThumb = Thumb;
+            this.BookStock = Stock;
+        }
+        public Book(string BookId,string BookTitle, Genre _Genre, Author _Author, string Description, Publisher _Publisher,
+           int Rating, double Cost, string Thumb, int Stock)
+        {
+            this.BookId = BookId;
             this.BookTitle = BookTitle;
             this.BookGenre = _Genre;
             this.BookAuthor = _Author;

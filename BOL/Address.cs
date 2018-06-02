@@ -12,6 +12,14 @@ namespace BOL
         public string City { get; set; }
         public string State { get; set; }
         public string ZipCode { get; set; }
-        public string Counttry { get; set; }
+        public string Country { get; set; }
+        public Address(string localAddr, string city, string state, string zipcode, string country)
+        {
+            this.LocalAddr = localAddr;
+            this.City = city;
+            this.State = state;
+            this.ZipCode = zipcode;
+            this.Country = country;
+        }
     }
 }
