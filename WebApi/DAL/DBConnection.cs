@@ -397,109 +397,139 @@ namespace DAL
             return status;
         }
 
+        public IList<User> getAllUser()
+        {
+            IList<User> usersList = new List<User>();
+            string cmdString = "SELECT `userdetails`.`UserId`, `userdetails`.`UserUname`, `userdetails`.`UserFname`, `userdetails`.`UserLname`,`userdetails`.`UserEmail`, `userdetails`.`UserContactNo`FROM `bookstore`.`userdetails`";
+            using(MySqlConnection con = new MySqlConnection())
+            {
+                con.Open();
+                MySqlCommand cmd = new MySqlCommand(cmdString, con);
+                MySqlDataReader dataSet = cmd.ExecuteReader();
+                if (dataSet.HasRows)
+                {
+                    while (dataSet.Read())
+                    {
+                        string userId = dataSet["UserId"].ToString();
+                        string userName = dataSet["UserUname"].ToString();
+                        string userFname = dataSet["UserFname"].ToString();
+                        string userLname = dataSet["UserLname"].ToString();
+                        string userEmail = dataSet["UserEmail"].ToString();
+                        string userContactNo = dataSet["UserContactNo"].ToString();
+                        usersList.Add(new User(userName, userFname, userLname, userEmail, userContactNo));
+                    }
+                }
+
+            }
+
+            return usersList;
+        }
+
         public bool validateUser(User user, string pass)
         {
             bool status = false;
-            string sessionId = null;
             try
             {
                 using (MySqlConnection con = new MySqlConnection(conString))
                 {
+                    con.Open();
                     string cmdString = "SELECT `userdetails`.`UserId`, `userdetails`.`UserUname`, `userdetails`.`UserFname`, `userdetails`.`UserLname`,`userdetails`.`UserEmail`, `userdetails`.`UserContactNo`FROM `bookstore`.`userdetails`WHERE userdetails.UserUname = @userName AND userdetails.UserPassword = @password";
                     MySqlCommand cmd = new MySqlCommand(cmdString, con);
                     cmd.Parameters.Add(new MySqlParameter("@userName", user.UserName));
                     cmd.Parameters.Add(new MySqlParameter("@password", pass));
 
                     MySqlDataReader userDetails = cmd.ExecuteReader();
-                    if (userDetails.HasRows) { 
+                    if (userDetails.HasRows)
+                    {
+                        userDetails.Read();
                         string userId = userDetails["UserId"].ToString();
-                        user.FirstName=userDetails["UserFname"].ToString();
+                        user.FirstName = userDetails["UserFname"].ToString();
                         user.LastName = userDetails["UserLname"].ToString();
                         user.Email = userDetails["UserEmail"].ToString();
                         user.ContactNo = userDetails["UserContactNo"].ToString();
                         userDetails.Close();
 
-                        //create session
-                        cmdString = "INSERT INTO `bookstore`.`sessionlog`(`SessionId`,`SessionExpiryTime`,`SessionUserId`)VALUES('@sessionId',CURRENT_TIMESTAMP(),date_add(current_timestamp(), interval 30 minute),'@userId'";
-                        cmd = new MySqlCommand(cmdString, con);
-                        cmd.Parameters.Add(new MySqlParameter("@userId", userId));
-                        sessionId = sessionIdGenerator();
-                        cmd.Parameters.Add(new MySqlParameter("@sessionId", sessionId));
-                        cmd.ExecuteNonQuery();
-                        
                         cmdString = "SELECT cart.CartBookId,cart.CartQuantity FROM cart where cart.CartCusId=  @userId";
                         cmd = new MySqlCommand(cmdString, con);
                         cmd.Parameters.Add(new MySqlParameter("@userId", userId));
                         List<Book> bookList = (List<Book>)getBooks();
                         MySqlDataReader userCartDetails = cmd.ExecuteReader();
-                        Dictionary<Book, int> cartBookList = new Dictionary<Book, int>();
-                        while (userCartDetails.Read())
+                        if(userCartDetails.HasRows)
                         {
-                            string bookId = userCartDetails["CartBookId"].ToString();
-                            int quantity = int.Parse(userCartDetails["CartQuantity"].ToString());
-                            foreach (Book book in bookList)
+                            while (userCartDetails.Read())
                             {
-                                if(book.BookId == bookId)
-                                {
-                                    cartBookList.Add(book, quantity);
-                                    break;
-                                }
-
-                            }
-                        }
-                        user.CartBookList = cartBookList;
-                        userCartDetails.Close();
-
-                        cmdString = "SELECT * FROM orders where CustomerId = @userId";
-                        cmd = new MySqlCommand(cmdString, con);
-                        cmd.Parameters.Add(new MySqlParameter("@userId", userId));
-                        MySqlDataReader userOrderDetails = cmd.ExecuteReader();
-                        while (userOrderDetails.Read())
-                        {
-                            string orderId = userOrderDetails["OrderId"].ToString();
-                            string orderAmount = userOrderDetails["OrderAmount"].ToString();
-                            string orderShipName = userOrderDetails["OrderShipName"].ToString();
-                            string orderShipAddress = userOrderDetails["OrderShipAddress"].ToString();
-                            string orderCity = userOrderDetails["OrderCity"].ToString();
-                            string orderState = userOrderDetails["OrderState"].ToString();
-                            string orderZip = userOrderDetails["OrderZip"].ToString();
-                            string orderCountry = userOrderDetails["OrderCountry"].ToString();
-                            string orderContactNo = userOrderDetails["OrderContactNo."].ToString();
-                            string orderData = userOrderDetails["OrderData"].ToString();
-                            bool orderShipped = userOrderDetails["OrderShipped"].ToString().Contains("1");
-                            string orderTransactionId = userOrderDetails["OrderTransactionId"].ToString();
-                            Address address = new Address(orderShipAddress, orderCity, orderState, orderZip, orderCountry);
-                            cmdString = "select * from orderdetails where DetailOrderId = '@orderId'";
-                            MySqlCommand cmd1 = new MySqlCommand(cmdString, con);
-                            cmd1.Parameters.Add(new MySqlParameter("@orderId", orderId));
-                            MySqlDataReader userOrderDetail = cmd1.ExecuteReader();
-                            IDictionary<Book, int> bookList1 = new Dictionary<Book, int>();
-                            while (userOrderDetail.Read())
-                            {
-                                string bookId = userOrderDetail["DetailProductId"].ToString();
-                                string quantity = userCartDetails["DetailQuantity"].ToString();
+                                string bookId = userCartDetails["CartBookId"].ToString();
+                                int quantity = int.Parse(userCartDetails["CartQuantity"].ToString());
                                 foreach (Book book in bookList)
                                 {
                                     if (book.BookId == bookId)
                                     {
-                                        bookList1.Add(book,int.Parse(quantity));
+                                        user.CartBookList.Add(new BookCount(book,quantity));
                                         break;
                                     }
+
                                 }
                             }
-                            user.OrderList.Add(new Order(orderShipName, address, orderContactNo, bookList1, orderShipped, orderTransactionId));
                         }
+                        userCartDetails.Close();
+                        cmdString = "SELECT * FROM orders where CustomerId = @userId";
+                        cmd = new MySqlCommand(cmdString, con);
+                        cmd.Parameters.Add(new MySqlParameter("@userId", userId));
+                        MySqlDataReader userOrderDetails = cmd.ExecuteReader();
+                        if (userOrderDetails.HasRows)
+                        {
+                            while (userOrderDetails.Read())
+                            {
+                                string orderId = userOrderDetails["OrderId"].ToString();
+                                string orderShipName = userOrderDetails["OrderShipName"].ToString();
+                                string orderShipAddress = userOrderDetails["OrderShipAddress"].ToString();
+                                string orderCity = userOrderDetails["OrderCity"].ToString();
+                                string orderState = userOrderDetails["OrderState"].ToString();
+                                string orderZip = userOrderDetails["OrderZip"].ToString();
+                                string orderCountry = userOrderDetails["OrderCountry"].ToString();
+                                string orderContactNo = userOrderDetails["OrderContactNo."].ToString();
+                                string orderData = userOrderDetails["OrderDate"].ToString();
+                                bool orderShipped = userOrderDetails["OrderShipped"].ToString().Contains("1");
+                                string orderTransactionId = userOrderDetails["OrderTransactionId"].ToString();
+                                Address address = new Address(orderShipAddress, orderCity, orderState, orderZip, orderCountry);
+                                IList<BookCount> bookList1 = new List<BookCount>();
+                                using (MySqlConnection con1 = new MySqlConnection(conString))
+                                {
+                                    con1.Open();
+                                    cmdString = "select * from orderdetails where DetailOrderId = @orderId";
+                                    MySqlCommand cmd1 = new MySqlCommand(cmdString, con1);
+                                    cmd1.Parameters.Add(new MySqlParameter("@orderId", orderId));
+                                    MySqlDataReader orderDetail = cmd1.ExecuteReader();
+                                    while (orderDetail.Read())
+                                    {
+                                        string bookId = orderDetail["DetailProductId"].ToString();
+                                        string quantity = orderDetail["DetailQuantity"].ToString();
+                                        foreach (Book book in bookList)
+                                        {
+                                            if (book.BookId == bookId)
+                                            {
+                                                bookList1.Add(new BookCount(book,int.Parse(quantity)));
+                                                break;
+                                            }
+                                        }
+                                    }
 
+                                }
+                                user.OrderList.Add(new Order(orderShipName, address, orderContactNo, bookList1, orderShipped, orderTransactionId));
+                            }
+                        }
                         userOrderDetails.Close();
+                        status = true;
                     }
                     else
                     {
                         status = false;
                     }
                 }
-            }catch(Exception ex)
+            }
+            catch (Exception ex)
             {
-                Console.WriteLine(ex);
+
             }
             return status;
         }
@@ -661,35 +691,131 @@ namespace DAL
             return status;
         }
 
-        public bool checkSession(User user, string sessionId)
+        public IDictionary<User,Order> getAllOrders()
+        {
+            IDictionary<User,Order> orderList = new Dictionary<User,Order>();
+            using (MySqlConnection con = new MySqlConnection(conString))
+            {
+                con.Open();
+                string cmdString = "SELECT userdetails.UserUname, orders.* FROM bookstore.userdetails, orders where orders.CustomerId = userdetails.UserId;";
+                MySqlCommand cmd = new MySqlCommand(cmdString, con);
+                MySqlDataReader userOrderDetails = cmd.ExecuteReader();
+                if (userOrderDetails.HasRows)
+                {
+                    IList<Book> bookList = getBooks();
+                    IList<User> userList = getAllUser();
+                    while (userOrderDetails.Read())
+                    {
+                        string orderId = userOrderDetails["OrderId"].ToString();
+                        string customerUserName = userOrderDetails["UserUname"].ToString();
+                        string orderShipName = userOrderDetails["OrderShipName"].ToString();
+                        string orderShipAddress = userOrderDetails["OrderShipAddress"].ToString();
+                        string orderCity = userOrderDetails["OrderCity"].ToString();
+                        string orderState = userOrderDetails["OrderState"].ToString();
+                        string orderZip = userOrderDetails["OrderZip"].ToString();
+                        string orderCountry = userOrderDetails["OrderCountry"].ToString();
+                        string orderContactNo = userOrderDetails["OrderContactNo."].ToString();
+                        string orderData = userOrderDetails["OrderDate"].ToString();
+                        bool orderShipped = userOrderDetails["OrderShipped"].ToString().Contains("1");
+                        string orderTransactionId = userOrderDetails["OrderTransactionId"].ToString();
+                        Address address = new Address(orderShipAddress, orderCity, orderState, orderZip, orderCountry);
+                        IList<BookCount> bookList1 = new List<BookCount>();
+                        using (MySqlConnection con1 = new MySqlConnection(conString))
+                        {
+                            con1.Open();
+                            cmdString = "select * from orderdetails where DetailOrderId = @orderId";
+                            MySqlCommand cmd1 = new MySqlCommand(cmdString, con1);
+                            cmd1.Parameters.Add(new MySqlParameter("@orderId", orderId));
+                            MySqlDataReader orderDetail = cmd1.ExecuteReader();
+                            while (orderDetail.Read())
+                            {
+                                string bookId = orderDetail["DetailProductId"].ToString();
+                                string quantity = orderDetail["DetailQuantity"].ToString();
+                                foreach (Book book in bookList)
+                                {
+                                    if (book.BookId == bookId)
+                                    {
+                                        bookList1.Add(new BookCount(book, int.Parse(quantity)));
+                                        break;
+                                    }
+                                }
+                            }
+
+                            foreach(User user in userList)
+                            {
+                                if(user.UserName == customerUserName)
+                                {
+                                    orderList.Add(user, new Order(orderShipName, address, orderContactNo, bookList1, orderShipped, orderTransactionId));
+                                    break;
+                                }
+                            }
+                        }
+
+                    }
+                }
+            }
+            return orderList;
+        }
+
+        public string createSession(User user)
+        {
+            string sessionId = null;
+            using (MySqlConnection con = new MySqlConnection(conString))
+            {
+                con.Open();
+                string cmdString = "SELECT `userdetails`.`UserId` FROM `bookstore`.`userdetails`WHERE userdetails.UserUname = @userName";
+                MySqlCommand cmd = new MySqlCommand(cmdString, con);
+                cmd.Parameters.Add(new MySqlParameter("@userName", user.UserName));
+
+                MySqlDataReader userDetails = cmd.ExecuteReader();
+                if (userDetails.HasRows)
+                {
+                    userDetails.Read();
+                    string userId = userDetails["UserId"].ToString();
+                    userDetails.Close();
+                    cmdString = "INSERT INTO `bookstore`.`sessionlog`(`SessionId`,`SessionExpiryTime`,`SessionUserId`)VALUES(@sessionId,date_add(current_timestamp(), interval 30 minute),@userId)";
+                    cmd = new MySqlCommand(cmdString, con);
+                    cmd.Parameters.Add(new MySqlParameter("@userId", userId));
+                    sessionId = sessionIdGenerator();
+                    cmd.Parameters.Add(new MySqlParameter("@sessionId", sessionId));
+                    cmd.ExecuteNonQuery();
+                }
+            }
+            return sessionId;
+        }
+
+        public bool checkSession(User user)
         {
             bool status = false;
             try
             {
                 using (MySqlConnection con = new MySqlConnection(conString))
                 {
+                    con.Open();
                     //check session
                     string cmdString = "SELECT * FROM `bookstore`.`sessionlog`, `bookstore`.`userdetails` WHERE userdetails.UserUname = @userName AND userdetails.UserId = sessionlog.SessionUserId and sessionlog.SessionId=@sessionId";
                     MySqlCommand cmd = new MySqlCommand(cmdString, con);
                     cmd.Parameters.Add(new MySqlParameter("@userName", user.UserName));
-                    cmd.Parameters.Add(new MySqlParameter("@sessionId", sessionId));
+                    cmd.Parameters.Add(new MySqlParameter("@sessionId", user.SessionId));
                     MySqlDataReader userDetails = cmd.ExecuteReader();
                     if (userDetails.HasRows)
                     {
+                        userDetails.Read();
                         string userId = userDetails["UserId"].ToString();
-
+                        userDetails.Close();
                         //update session
                         cmdString = "UPDATE `bookstore`.`sessionlog` SET `SessionId` = '@newSessionId', `SessionExpiryTime` = date_add(current_timestamp(), interval 30 minute), `SessionUserId` = '@userId' WHERE `SessionId` = '@oldSessionId'"; ;
                         cmd = new MySqlCommand(cmdString, con);
                         cmd.Parameters.Add(new MySqlParameter("@userId", userId));
-                        cmd.Parameters.Add(new MySqlParameter("@oldSessionId", sessionId));
+                        cmd.Parameters.Add(new MySqlParameter("@oldSessionId", user.SessionId));
                         string newSessionId = sessionIdGenerator();
                         cmd.Parameters.Add(new MySqlParameter("@newSessionId", newSessionId));
                         cmd.ExecuteNonQuery();
-                        sessionId = newSessionId;
+                        user.SessionId = newSessionId;
                         status = true;
                     }
-                    userDetails.Close();
+                    if(!userDetails.IsClosed)
+                        userDetails.Close();
                 }
             }
             catch (Exception ex)
@@ -699,7 +825,7 @@ namespace DAL
             return status;
         }
 
-        public bool endSession(User user, string sessionId)
+        public bool endSession(Claim user)
         {
             bool status = false;
 
@@ -707,25 +833,24 @@ namespace DAL
             {
                 using (MySqlConnection con = new MySqlConnection(conString))
                 {
+                    con.Open();
                     //check session
                     string cmdString = "SELECT * FROM `bookstore`.`sessionlog`, `bookstore`.`userdetails` WHERE userdetails.UserUname = @userName AND userdetails.UserId = sessionlog.SessionUserId and sessionlog.SessionId=@sessionId";
                     MySqlCommand cmd = new MySqlCommand(cmdString, con);
                     cmd.Parameters.Add(new MySqlParameter("@userName", user.UserName));
-                    cmd.Parameters.Add(new MySqlParameter("@sessionId", sessionId));
+                    cmd.Parameters.Add(new MySqlParameter("@sessionId", user.SessionId));
                     MySqlDataReader userDetails = cmd.ExecuteReader();
                     if (userDetails.HasRows)
                     {
+                        userDetails.Read();
                         string userId = userDetails["UserId"].ToString();
-
+                        userDetails.Close();
                         //update session
                         cmdString = "UPDATE `bookstore`.`sessionlog` SET `SessionExpiryTime` = current_timestamp(), `SessionUserId` = '@userId' WHERE `SessionId` = '@oldSessionId'"; ;
                         cmd = new MySqlCommand(cmdString, con);
                         cmd.Parameters.Add(new MySqlParameter("@userId", userId));
-                        cmd.Parameters.Add(new MySqlParameter("@oldSessionId", sessionId));
-                        string newSessionId = sessionIdGenerator();
-                        cmd.Parameters.Add(new MySqlParameter("@newSessionId", newSessionId));
+                        cmd.Parameters.Add(new MySqlParameter("@oldSessionId", user.SessionId));
                         cmd.ExecuteNonQuery();
-                        sessionId = newSessionId;
                         status = true;
                     }
                     userDetails.Close();
