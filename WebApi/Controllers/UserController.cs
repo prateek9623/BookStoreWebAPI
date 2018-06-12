@@ -11,7 +11,7 @@ using Newtonsoft.Json.Linq;
 using Newtonsoft.Json;
 using System.Web;
 using System.Web.Script.Serialization;
-
+using WebApi.Filters;
 
 namespace WebApi.Controllers
 {
@@ -22,7 +22,6 @@ namespace WebApi.Controllers
         {
             DBCon = DBConnection.getObject();
         }
-
         
         [HttpPost]
         [ResponseType(typeof(User))]
@@ -66,6 +65,7 @@ namespace WebApi.Controllers
             }
             return new HttpResponseMessage(HttpStatusCode.BadRequest);
         }
+        
 
         [HttpPost]
         [Route("api/user/logout")]

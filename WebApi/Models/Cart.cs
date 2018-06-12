@@ -7,12 +7,12 @@ namespace WebApi.Models
 {
     public class Cart
     {
-        public string BookId { get; set;}
+        public Book _Book { get; set;}
         public string BookQuantity { get; set; }
 
-        public Cart(string bookId , string bookQuantity)
+        public Cart(Book book , string bookQuantity)
         {
-            this.BookId = bookId;
+            this._Book = book;
             this.BookQuantity = bookQuantity;
         }
     }

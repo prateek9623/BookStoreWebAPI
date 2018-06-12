@@ -442,83 +442,16 @@ namespace DAL
                     if (userDetails.HasRows)
                     {
                         userDetails.Read();
-                        string userId = userDetails["UserId"].ToString();
+                        user.UserId = userDetails["UserId"].ToString();
                         user.FirstName = userDetails["UserFname"].ToString();
                         user.LastName = userDetails["UserLname"].ToString();
                         user.Email = userDetails["UserEmail"].ToString();
                         user.ContactNo = userDetails["UserContactNo"].ToString();
                         userDetails.Close();
 
-                        cmdString = "SELECT cart.CartBookId,cart.CartQuantity FROM cart where cart.CartCusId=  @userId";
-                        cmd = new MySqlCommand(cmdString, con);
-                        cmd.Parameters.Add(new MySqlParameter("@userId", userId));
-                        List<Book> bookList = (List<Book>)getBooks();
-                        MySqlDataReader userCartDetails = cmd.ExecuteReader();
-                        if(userCartDetails.HasRows)
-                        {
-                            while (userCartDetails.Read())
-                            {
-                                string bookId = userCartDetails["CartBookId"].ToString();
-                                int quantity = int.Parse(userCartDetails["CartQuantity"].ToString());
-                                foreach (Book book in bookList)
-                                {
-                                    if (book.BookId == bookId)
-                                    {
-                                        user.CartBookList.Add(new BookCount(book,quantity));
-                                        break;
-                                    }
+                        user.CartBookList = getCartsBook(user);
+                        user.OrderList = getOrdersByUser(user);
 
-                                }
-                            }
-                        }
-                        userCartDetails.Close();
-                        cmdString = "SELECT * FROM orders where CustomerId = @userId";
-                        cmd = new MySqlCommand(cmdString, con);
-                        cmd.Parameters.Add(new MySqlParameter("@userId", userId));
-                        MySqlDataReader userOrderDetails = cmd.ExecuteReader();
-                        if (userOrderDetails.HasRows)
-                        {
-                            while (userOrderDetails.Read())
-                            {
-                                string orderId = userOrderDetails["OrderId"].ToString();
-                                string orderShipName = userOrderDetails["OrderShipName"].ToString();
-                                string orderShipAddress = userOrderDetails["OrderShipAddress"].ToString();
-                                string orderCity = userOrderDetails["OrderCity"].ToString();
-                                string orderState = userOrderDetails["OrderState"].ToString();
-                                string orderZip = userOrderDetails["OrderZip"].ToString();
-                                string orderCountry = userOrderDetails["OrderCountry"].ToString();
-                                string orderContactNo = userOrderDetails["OrderContactNo."].ToString();
-                                string orderData = userOrderDetails["OrderDate"].ToString();
-                                bool orderShipped = userOrderDetails["OrderShipped"].ToString().Contains("1");
-                                string orderTransactionId = userOrderDetails["OrderTransactionId"].ToString();
-                                Address address = new Address(orderShipAddress, orderCity, orderState, orderZip, orderCountry);
-                                IList<BookCount> bookList1 = new List<BookCount>();
-                                using (MySqlConnection con1 = new MySqlConnection(conString))
-                                {
-                                    con1.Open();
-                                    cmdString = "select * from orderdetails where DetailOrderId = @orderId";
-                                    MySqlCommand cmd1 = new MySqlCommand(cmdString, con1);
-                                    cmd1.Parameters.Add(new MySqlParameter("@orderId", orderId));
-                                    MySqlDataReader orderDetail = cmd1.ExecuteReader();
-                                    while (orderDetail.Read())
-                                    {
-                                        string bookId = orderDetail["DetailProductId"].ToString();
-                                        string quantity = orderDetail["DetailQuantity"].ToString();
-                                        foreach (Book book in bookList)
-                                        {
-                                            if (book.BookId == bookId)
-                                            {
-                                                bookList1.Add(new BookCount(book,int.Parse(quantity)));
-                                                break;
-                                            }
-                                        }
-                                    }
-
-                                }
-                                user.OrderList.Add(new Order(orderShipName, address, orderContactNo, bookList1, orderShipped, orderTransactionId));
-                            }
-                        }
-                        userOrderDetails.Close();
                         status = true;
                     }
                     else
@@ -529,7 +462,7 @@ namespace DAL
             }
             catch (Exception ex)
             {
-
+                Console.WriteLine(ex.StackTrace);
             }
             return status;
         }
@@ -563,16 +496,22 @@ namespace DAL
             IList<Cart> cartsBook = new List<Cart>();
             using (MySqlConnection con = new MySqlConnection(conString))
             {
-                string cmdString = "select cart.CartBookId, cart.CartQuantity from cart where CartCusId=@userName";
+                string cmdString = "select cart.CartBookId, cart.CartQuantity from cart, userdetails where CartCusId=UserId and UserUname=@userName";
                 MySqlCommand cmd = new MySqlCommand(cmdString, con);
                 cmd.Parameters.Add(new MySqlParameter("@userName", user.UserName));
                 try
                 {
                     con.Open();
                     MySqlDataReader reader = cmd.ExecuteReader();
+                    IList<Book> bookList = getBooks();
                     while (reader.Read())
                     {
-                        cartsBook.Add(new Cart(reader["CartBookId"].ToString(),reader["CartQuantity"].ToString()));
+                        string bookId = reader["CartBookId"].ToString();
+                        foreach (Book book in bookList)
+                        {
+                            if(book.BookId==bookId)
+                                cartsBook.Add(new Cart(book, reader["CartQuantity"].ToString()));
+                        }
                     }
                     reader.Close();
                 }
@@ -668,10 +607,10 @@ namespace DAL
                     orderId = dataset["orderId"].ToString();
 
                     IList<Cart> cart = getCartsBook(user);
-                    cmdString = "insert into orderdetails values('" + orderId + "','" + cart[0].BookId + "'," + cart[0].BookQuantity + ")";
+                    cmdString = "insert into orderdetails values('" + orderId + "','" + cart[0]._Book.BookId + "'," + cart[0].BookQuantity + ")";
                     for (int i = 1;i < cart.Count;i++)
                     {
-                        cmdString += ",('" + orderId + "','" + cart[i].BookId + "','" + cart[i].BookQuantity + "')";
+                        cmdString += ",('" + orderId + "','" + cart[i]._Book.BookId + "','" + cart[i].BookQuantity + "')";
                     }
                     cmd = new MySqlCommand(cmdString, con);
                     cmd.ExecuteNonQuery();
@@ -753,6 +692,65 @@ namespace DAL
 
                     }
                 }
+            }
+            return orderList;
+        }
+
+        public IList<Order> getOrdersByUser(User user)
+        {
+            IList<Order> orderList = new List<Order>();
+            using (MySqlConnection con = new MySqlConnection(conString))
+            {
+                con.Open();
+                string cmdString = "SELECT * FROM orders, userdetails where UserUname = @userName";
+                MySqlCommand cmd = new MySqlCommand(cmdString, con);
+                cmd.Parameters.Add(new MySqlParameter("@userName", user.UserName));
+                MySqlDataReader userOrderDetails = cmd.ExecuteReader();
+                if (userOrderDetails.HasRows)
+                {
+                    IList<Book> bookList = getBooks();
+                    while (userOrderDetails.Read())
+                    {
+                        string orderId = userOrderDetails["OrderId"].ToString();
+                        string orderShipName = userOrderDetails["OrderShipName"].ToString();
+                        string orderShipAddress = userOrderDetails["OrderShipAddress"].ToString();
+                        string orderCity = userOrderDetails["OrderCity"].ToString();
+                        string orderState = userOrderDetails["OrderState"].ToString();
+                        string orderZip = userOrderDetails["OrderZip"].ToString();
+                        string orderCountry = userOrderDetails["OrderCountry"].ToString();
+                        string orderContactNo = userOrderDetails["OrderContactNo."].ToString();
+                        string orderData = userOrderDetails["OrderDate"].ToString();
+                        bool orderShipped = userOrderDetails["OrderShipped"].ToString().Contains("1");
+                        string orderTransactionId = userOrderDetails["OrderTransactionId"].ToString();
+                        Address address = new Address(orderShipAddress, orderCity, orderState, orderZip, orderCountry);
+                        IList<BookCount> bookList1 = new List<BookCount>();
+                        using (MySqlConnection con1 = new MySqlConnection(conString))
+                        {
+                            con1.Open();
+                            cmdString = "select * from orderdetails where DetailOrderId = @orderId";
+                            MySqlCommand cmd1 = new MySqlCommand(cmdString, con1);
+                            cmd1.Parameters.Add(new MySqlParameter("@orderId", orderId));
+                            MySqlDataReader orderDetail = cmd1.ExecuteReader();
+                            while (orderDetail.Read())
+                            {
+                                string bookId = orderDetail["DetailProductId"].ToString();
+                                string quantity = orderDetail["DetailQuantity"].ToString();
+                                foreach (Book book in bookList)
+                                {
+                                    if (book.BookId == bookId)
+                                    {
+                                        bookList1.Add(new BookCount(book, int.Parse(quantity)));
+                                        break;
+                                    }
+                                }
+                            }
+
+                        }
+                        orderList.Add(new Order(orderShipName, address, orderContactNo, bookList1, orderShipped, orderTransactionId));
+                    }
+                }
+                userOrderDetails.Close();
+
             }
             return orderList;
         }
