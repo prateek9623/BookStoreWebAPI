@@ -8,13 +8,11 @@ namespace WebApi.Models
 {
     public class Author
     {
-        public string AuthorFname { get; set; }
-        public string AuthorLname { get; set; }
+        public string AuthorName { get; set; }
 
-        public Author(string Fname, string Lname)
+        public Author(string name)
         {
-            this.AuthorFname = Fname;
-            this.AuthorLname = Lname;
+            this.AuthorName = name;
         }
     }
 }

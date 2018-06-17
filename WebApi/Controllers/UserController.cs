@@ -32,7 +32,7 @@ namespace WebApi.Controllers
             string password = HttpContext.Current.Request.Params["password"];
             User user = new User(username);
             if (DBCon.validateUser(user, password)){
-                user.SessionId = DBCon.createSession(user);
+                DBCon.createSession(user);
                 return Request.CreateResponse(HttpStatusCode.Accepted, user);
             }
             return new HttpResponseMessage(HttpStatusCode.Unauthorized);
@@ -48,36 +48,55 @@ namespace WebApi.Controllers
             User user = new User(username);
             if (DBCon.validateUser(user, password)&&DBCon.validateAdmin(user))
             {
-                user.SessionId = DBCon.createSession(user);
+                DBCon.createSession(user);
                 return Request.CreateResponse(HttpStatusCode.Accepted, Json(user));
             }
             return new HttpResponseMessage(HttpStatusCode.Unauthorized);
         }
-
+        
         [HttpPost]
         [ResponseType(typeof(User))]
         [Route("api/user/registration")]
-        public HttpResponseMessage Registeration(User newUser, [FromBody]  string userPass )
+        public HttpResponseMessage Registeration()
         {
-            if (DBCon.addUser(newUser, userPass)){
-                newUser.SessionId = DBCon.createSession(newUser);
-                return Request.CreateResponse(HttpStatusCode.Accepted, Json(newUser));
+            string userName = HttpContext.Current.Request.Params["userName"];
+            string frontName = HttpContext.Current.Request.Params["frontName"];
+            string lastName = HttpContext.Current.Request.Params["lastName"];
+            string email = HttpContext.Current.Request.Params["email"];
+            string contactNo = HttpContext.Current.Request.Params["contactno"];
+            string password = HttpContext.Current.Request.Params["password"];
+            User newUser = new User(userName, frontName, lastName, email, contactNo);
+            if (DBCon.addUser(newUser, password)){
+                DBCon.createSession(newUser);
+                return Request.CreateResponse(HttpStatusCode.Accepted, newUser);
             }
             return new HttpResponseMessage(HttpStatusCode.BadRequest);
         }
         
-
         [HttpPost]
         [Route("api/user/logout")]
-        public HttpResponseMessage LogOut(JObject jsonObject)
+        public HttpResponseMessage LogOut(Claim claim)
         {
-            if (DBCon.endSession(jsonObject.ToObject<Claim>()))
+            if (DBCon.endSession(claim))
             {
                 return new HttpResponseMessage(HttpStatusCode.Accepted);
             }
             return new HttpResponseMessage(HttpStatusCode.BadRequest);
         }
 
+        [HttpPost]
+        [ResponseType(typeof(User))]
+        [Route("api/user/details")]
+        public HttpResponseMessage Details(Claim claim)
+        {
+            User user = new User(claim.UserName, claim.SessionId);
+
+            if (DBCon.checkSession(user))
+            {
+                return Request.CreateResponse(HttpStatusCode.Accepted, DBCon.getUserDetails(user));
+            }
+            return new HttpResponseMessage(HttpStatusCode.BadRequest);
+        }
     }
 
 }

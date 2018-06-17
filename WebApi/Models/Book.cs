@@ -46,5 +46,16 @@ namespace WebApi.Models
             this.BookThumb = Thumb;
             this.BookStock = Stock;
         }
+        public Book(string BookTitle, Genre _Genre, Author _Author, string Description, Publisher _Publisher,
+           double Cost, int Stock)
+        {
+            this.BookTitle = BookTitle;
+            this.BookGenre = _Genre;
+            this.BookAuthor = _Author;
+            this.BookDescription = Description;
+            this.BookPublisher = _Publisher;
+            this.BookCost = Cost;
+            this.BookStock = Stock;
+        }
     }
 }
