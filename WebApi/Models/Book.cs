@@ -47,7 +47,7 @@ namespace WebApi.Models
             this.BookStock = Stock;
         }
         public Book(string BookTitle, Genre _Genre, Author _Author, string Description, Publisher _Publisher,
-           double Cost, int Stock)
+           double Cost, string Thumb, int Stock)
         {
             this.BookTitle = BookTitle;
             this.BookGenre = _Genre;
@@ -56,6 +56,7 @@ namespace WebApi.Models
             this.BookPublisher = _Publisher;
             this.BookCost = Cost;
             this.BookStock = Stock;
+            this.BookThumb = Thumb;
         }
     }
 }

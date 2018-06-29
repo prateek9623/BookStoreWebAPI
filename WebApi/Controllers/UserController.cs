@@ -26,30 +26,19 @@ namespace WebApi.Controllers
         [HttpPost]
         [ResponseType(typeof(User))]
         [Route("api/user/login")]
-        public HttpResponseMessage  ValidateUser()
+        public HttpResponseMessage  ValidateUser(JObject obj)
         {
-            string username = HttpContext.Current.Request.Params["username"];
-            string password = HttpContext.Current.Request.Params["password"];
+
+            string username = obj.Value<String>("userName");
+            string password = obj.Value<String>("password");
             User user = new User(username);
             if (DBCon.validateUser(user, password)){
                 DBCon.createSession(user);
+                if (DBCon.validateAdmin(user))
+                {
+                    user.isAdmin = true;
+                }
                 return Request.CreateResponse(HttpStatusCode.Accepted, user);
-            }
-            return new HttpResponseMessage(HttpStatusCode.Unauthorized);
-        }
-
-        [HttpPost]
-        [ResponseType(typeof(User))]
-        [Route("api/user/admin/login")]
-        public HttpResponseMessage ValidateAdmin()
-        {
-            string username = HttpContext.Current.Request.Params["username"];
-            string password = HttpContext.Current.Request.Params["password"];
-            User user = new User(username);
-            if (DBCon.validateUser(user, password)&&DBCon.validateAdmin(user))
-            {
-                DBCon.createSession(user);
-                return Request.CreateResponse(HttpStatusCode.Accepted, Json(user));
             }
             return new HttpResponseMessage(HttpStatusCode.Unauthorized);
         }
@@ -57,15 +46,14 @@ namespace WebApi.Controllers
         [HttpPost]
         [ResponseType(typeof(User))]
         [Route("api/user/registration")]
-        public HttpResponseMessage Registeration()
+        public HttpResponseMessage Registeration(JObject obj)
         {
-            string userName = HttpContext.Current.Request.Params["userName"];
-            string frontName = HttpContext.Current.Request.Params["frontName"];
-            string lastName = HttpContext.Current.Request.Params["lastName"];
-            string email = HttpContext.Current.Request.Params["email"];
-            string contactNo = HttpContext.Current.Request.Params["contactno"];
-            string password = HttpContext.Current.Request.Params["password"];
-            User newUser = new User(userName, frontName, lastName, email, contactNo);
+            string userName = obj.Value<String>("userName");
+            string frontName = obj.Value<String>("firstName");
+            string lastName = obj.Value<String>("lastName");
+            string email = obj.Value<String>("email");
+            string password = obj.Value<String>("password");
+            User newUser = new User(userName, frontName, lastName, email);
             if (DBCon.addUser(newUser, password)){
                 DBCon.createSession(newUser);
                 return Request.CreateResponse(HttpStatusCode.Accepted, newUser);

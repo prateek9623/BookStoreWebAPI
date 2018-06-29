@@ -79,6 +79,7 @@ namespace WebApi.Controllers
                 string bookAuthor = obj.Value<String>("author");
                 string bookDescription = obj.Value<String>("description");
                 string bookPublisher = obj.Value<String>("publisher");
+                string bookThumb = obj.Value<String>("imageurl");
                 double bookCost;
                 int bookStock;
                 try
@@ -91,7 +92,7 @@ namespace WebApi.Controllers
                     return Request.CreateResponse(HttpStatusCode.NotAcceptable, user);
                 }
                 DBCon.getUserDetails(user);
-                if (bookCon.addBook(new Book(bookTitle, new Genre(bookGenre), new Author(bookAuthor), bookDescription, new Publisher(bookPublisher), bookCost, bookStock)))
+                if (bookCon.addBook(new Book(bookTitle, new Genre(bookGenre), new Author(bookAuthor), bookDescription, new Publisher(bookPublisher), bookCost,bookThumb, bookStock)))
                     return Request.CreateResponse(HttpStatusCode.Accepted,user);
                 else
                     return Request.CreateResponse(HttpStatusCode.NotAcceptable, user);

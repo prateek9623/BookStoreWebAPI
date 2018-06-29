@@ -326,10 +326,9 @@ namespace DAL
                     string fname = dataSet["UserFname"].ToString();
                     string lname = dataSet["UserLname"].ToString();
                     string email = dataSet["UserEmail"].ToString();
-                    string contactNo = dataSet["UserContactNo"].ToString();
                     string userComment = dataSet["CustomerComment"].ToString();
                     int userRating = int.Parse(dataSet["CustomerRating"].ToString());
-                    reviewList.Add( new UserReview(new User(uName,fname,lname,email,contactNo),userRating,userComment));
+                    reviewList.Add( new UserReview(new User(uName,fname,lname,email),userRating,userComment));
                 }
             }
             return reviewList;
@@ -379,14 +378,13 @@ namespace DAL
                 using (MySqlConnection con = new MySqlConnection(conString))
                 {
                     con.Open();
-                    string cmdString = "INSERT INTO `bookstore`.`userdetails`(`UserUname`,`UserFname`,`UserLname`,`UserPassword`,`UserEmail`,`UserContactNo`)VALUES( @userName, @userFname, @userLname, @userPass, @userEmail, @userContactNo);";
+                    string cmdString = "INSERT INTO `bookstore`.`userdetails`(`UserUname`,`UserFname`,`UserLname`,`UserPassword`,`UserEmail`)VALUES( @userName, @userFname, @userLname, @userPass, @userEmail);";
                     MySqlCommand cmd = new MySqlCommand(cmdString, con);
                     cmd.Parameters.Add(new MySqlParameter("@userName", newUser.UserName));
                     cmd.Parameters.Add(new MySqlParameter("@userFname", newUser.FirstName));
                     cmd.Parameters.Add(new MySqlParameter("@userLname", newUser.LastName));
                     cmd.Parameters.Add(new MySqlParameter("@userPass", userPass));
                     cmd.Parameters.Add(new MySqlParameter("@userEmail", newUser.Email));
-                    cmd.Parameters.Add(new MySqlParameter("@userContactNo", newUser.ContactNo));
                     cmd.ExecuteNonQuery();
                     status = true;
                     if (con.State == System.Data.ConnectionState.Open)
@@ -394,7 +392,7 @@ namespace DAL
                         con.Close();
                     }
                 }
-            }catch(Exception ex)
+            }catch(SqlException ex)
             {
                 Console.WriteLine(ex);
             }
@@ -405,7 +403,7 @@ namespace DAL
         public IList<User> getAllUser()
         {
             IList<User> usersList = new List<User>();
-            string cmdString = "SELECT `userdetails`.`UserId`, `userdetails`.`UserUname`, `userdetails`.`UserFname`, `userdetails`.`UserLname`,`userdetails`.`UserEmail`, `userdetails`.`UserContactNo`FROM `bookstore`.`userdetails`";
+            string cmdString = "SELECT `userdetails`.`UserId`, `userdetails`.`UserUname`, `userdetails`.`UserFname`, `userdetails`.`UserLname`,`userdetails`.`UserEmail` FROM `bookstore`.`userdetails`";
             using(MySqlConnection con = new MySqlConnection())
             {
                 con.Open();
@@ -420,8 +418,7 @@ namespace DAL
                         string userFname = dataSet["UserFname"].ToString();
                         string userLname = dataSet["UserLname"].ToString();
                         string userEmail = dataSet["UserEmail"].ToString();
-                        string userContactNo = dataSet["UserContactNo"].ToString();
-                        usersList.Add(new User(userName, userFname, userLname, userEmail, userContactNo));
+                        usersList.Add(new User(userName, userFname, userLname, userEmail));
                     }
                 }
 
@@ -438,7 +435,7 @@ namespace DAL
                 using (MySqlConnection con = new MySqlConnection(conString))
                 {
                     con.Open();
-                    string cmdString = "SELECT `userdetails`.`UserId`, `userdetails`.`UserUname`, `userdetails`.`UserFname`, `userdetails`.`UserLname`,`userdetails`.`UserEmail`, `userdetails`.`UserContactNo`FROM `bookstore`.`userdetails`WHERE userdetails.UserUname = @userName AND userdetails.UserPassword = @password";
+                    string cmdString = "SELECT `userdetails`.`UserId`, `userdetails`.`UserUname`, `userdetails`.`UserFname`, `userdetails`.`UserLname`,`userdetails`.`UserEmail` FROM `bookstore`.`userdetails`WHERE userdetails.UserUname = @userName AND userdetails.UserPassword = @password";
                     MySqlCommand cmd = new MySqlCommand(cmdString, con);
                     cmd.Parameters.Add(new MySqlParameter("@userName", user.UserName));
                     cmd.Parameters.Add(new MySqlParameter("@password", pass));
@@ -470,7 +467,7 @@ namespace DAL
                 using (MySqlConnection con = new MySqlConnection(conString))
                 {
                     con.Open();
-                    string cmdString = "SELECT `userdetails`.`UserId`, `userdetails`.`UserUname`, `userdetails`.`UserFname`, `userdetails`.`UserLname`,`userdetails`.`UserEmail`, `userdetails`.`UserContactNo`FROM `bookstore`.`userdetails`WHERE userdetails.UserUname = @userName";
+                    string cmdString = "SELECT `userdetails`.`UserId`, `userdetails`.`UserUname`, `userdetails`.`UserFname`, `userdetails`.`UserLname`,`userdetails`.`UserEmail` FROM `bookstore`.`userdetails`WHERE userdetails.UserUname = @userName";
                     MySqlCommand cmd = new MySqlCommand(cmdString, con);
                     cmd.Parameters.Add(new MySqlParameter("@userName", user.UserName));
 
@@ -482,7 +479,6 @@ namespace DAL
                         user.FirstName = userDetails["UserFname"].ToString();
                         user.LastName = userDetails["UserLname"].ToString();
                         user.Email = userDetails["UserEmail"].ToString();
-                        user.ContactNo = userDetails["UserContactNo"].ToString();
                         userDetails.Close();
 
                         user.CartBookList = getCartsBook(user);
