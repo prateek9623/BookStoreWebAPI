@@ -59,9 +59,9 @@ namespace WebApi.Controllers
         [HttpGet]
         [Route("api/Book/{bookName}")]
         [ResponseType(typeof(Book[]))]
-        public HttpResponseMessage Book(string bookName)
+        public HttpResponseMessage Book(string bookId)
         {
-            return Request.CreateResponse(HttpStatusCode.Accepted, DBCon.getBookByName(bookName).ToArray<Book>());
+            return Request.CreateResponse(HttpStatusCode.Accepted, DBCon.getBookById(bookId).ToArray<Book>());
         }
 
         [HttpPost]

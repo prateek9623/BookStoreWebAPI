@@ -1,42 +1,55 @@
-<div class="row">
-  <div class="col-3">
+<div class="row container-fluid">
+  <div class="" style="width: 300px;">
     <mat-card class="sticky-top">
       <mat-list>
         <mat-list-item>
-          <button mat-raised-button matLine style="text-align: left; padding-left: 1rem;" [class.active]="!genre&&!publisher" routerLink="/">
+          <button class="expanded-btn btn-block" mat-raised-button matLine [class.active]="!genre&&!publisher" routerLink="/">
             All Books</button>
         </mat-list-item>
-        <mat-divider>
-        </mat-divider>
-        <h5>Genre</h5>
-        <mat-list-item *ngFor="let g of genres$ | async">
-          <button mat-raised-button matLine style="text-align: left; padding-left: 1rem;" [class.active]="g===genre" routerLink="/"
-            [queryParams]="{genre: g}">
-            {{g}}</button>
-        </mat-list-item>
-        <mat-divider>
-        </mat-divider>
-        <h5>Publisher</h5>
-        <mat-list-item *ngFor="let p of publishers$ | async">
-          <button mat-raised-button matLine style="text-align: left; padding-left: 1rem;" [class.active]="p===publisher" routerLink="/"
-            [queryParams]="{ publisher: p }">
-            {{p}}</button>
-        </mat-list-item>
       </mat-list>
+      <mat-accordion>
+        <mat-expansion-panel>
+          <mat-expansion-panel-header>
+            <mat-panel-title>
+              Genre
+            </mat-panel-title>
+          </mat-expansion-panel-header>
+          <mat-list>
+            <mat-list-item *ngFor="let g of genres$ | async">
+              <button mat-raised-button matLine style="text-align: left; padding-left: 1rem;" [class.active]="g===genre" routerLink="/"
+                [queryParams]="{genre: g}">
+                {{g}}</button>
+            </mat-list-item>
+          </mat-list>
+        </mat-expansion-panel>
+        <mat-expansion-panel>
+          <mat-expansion-panel-header>
+            <mat-panel-title>
+              Publisher
+            </mat-panel-title>
+          </mat-expansion-panel-header>
+          <mat-list>
+            <mat-list-item *ngFor="let p of publishers$ | async">
+              <button mat-raised-button matLine style="text-align: left; padding-left: 1rem;" [class.active]="p===publisher" routerLink="/"
+                [queryParams]="{ publisher: p }">
+                {{p}}</button>
+            </mat-list-item>
+          </mat-list>
+        </mat-expansion-panel>
+      </mat-accordion>
     </mat-card>
   </div>
   <div class="col">
     <div class="gridRow">
       <ng-container *ngFor="let b of filteredBooks">
-        <mat-card class="gridColumn card d-flex">
-          <mat-card-header>
-            <mat-card-title>{{b.BookTitle}}</mat-card-title>
-            <mat-card-subtitle>{{b.BookAuthor.AuthorName}}</mat-card-subtitle>
-          </mat-card-header>
-          <img class="m-auto" mat-card-image [src]="b.BookThumb" [alt]="b.BookTitle">
-          <hr>
-          <mat-card-content>
-            <div class="d-flex justify-content-between">
+        <div class="gridColumn card d-flex">
+          <img class="card-img-top" mat-card-image [src]="b.BookThumb" [alt]="b.BookTitle">
+          <div class="card-body">
+            <a href="https://www.google.com">
+              <h5 class="card-title">{{b.BookTitle}}</h5>
+            </a>
+            <h6 class="card-subtitle mb-2 text-muted">{{b.BookAuthor.AuthorName}}</h6>
+            <div class="card-text d-flex justify-content-between">
               <div>
                 {{b.BookCost | currency: 'INR'}}
               </div>
@@ -45,11 +58,24 @@
                 <mat-icon [matBadge]="b.BookRating" matBadgeColor="accent">star</mat-icon>
               </div>
             </div>
-          </mat-card-content>
-          <mat-card-actions class="card-footer" >
-            <a mat-raised-button class="btn-block" color="primary" href="#">Add to cart</a>
-          </mat-card-actions>
-        </mat-card>
+            <div class="card-footer">
+              <button *ngIf="cart.getQuantity(b)===0; else updateQuantity" mat-raised-button class="btn-block" color="primary" (click)="addToCart(b)">Add to cart</button>
+              <ng-template #updateQuantity>
+                <div class="row no-gutters">
+                  <div class="col-2">
+                    <button (click)="removeFromCart(b)" class="btn btn-secondary btn-block">-</button>
+                  </div>
+                  <div class="col text-center quantity">
+                    {{cart.getQuantity(b)}} in cart
+                  </div>
+                  <div class="col-2">
+                    <button (click)="addToCart(b)" class="btn btn-secondary btn-block">+</button>
+                  </div>
+                </div>
+              </ng-template>
+            </div>
+          </div>
+        </div>
       </ng-container>
     </div>
   </div>

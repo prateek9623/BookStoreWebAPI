@@ -2,23 +2,33 @@
   float: left;
 }
 
-img {
-  width: 8rem;
+a{
+  text-decoration: none;
+  color: black;
 }
 
 .card {
   width: 20rem;
-  height: 25rem;
-  margin: 0.5rem;
+  height: 26rem;
+  margin-left: 1rem;
+  margin-bottom: 1rem;
+  padding-top: 2rem;
 }
 @media screen and (max-width:600px) {
   .gridColumn {
     width: 100%;
   }
 }
-
 .card-footer{
   padding: 0;
+  position: sticky;
+}
+
+.card-body{
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
 }
 
 .gridRow:after {
@@ -27,6 +37,11 @@ img {
   clear: both;
 }
 
+img{
+  height: 60%;
+  width: auto;
+  margin: auto;
+}
 
 .active{
    background-color: lightgray;
@@ -35,4 +50,20 @@ img {
 .sticky-top{
   position: sticky;
   top:80px;
+}
+
+.container-fluid{
+  padding-left: 50px;
+}
+
+.quantity {
+  height: 37px;
+  line-height: 37px;
+}
+
+.expanded-btn{
+  position: absolute;
+  top:0;
+  left: 0;
+  right:0;
 }

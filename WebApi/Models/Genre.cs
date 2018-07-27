@@ -12,6 +12,8 @@ namespace WebApi.Models
         public string GenreName { get; set; }
         #endregion
 
+        public Genre() { }
+
         public Genre ( string Name)
         {
             GenreName = Name;

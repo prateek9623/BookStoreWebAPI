@@ -9,13 +9,13 @@ namespace WebApi.BLL
 {
     public class CartBLL
     {
-        public static bool updateCart(User user, string bookId,int quantity )
+        public static bool updateCart(User user, Cart cartItem)
         {
             bool status = false;
             Cart cartItemToBeUpdated = null;
             foreach (Cart c in user.CartBookList)
             {
-                if (c._Book.BookId == bookId)
+                if (c._Book.BookId == cartItem._Book.BookId)
                 {
                     cartItemToBeUpdated = c;
                     break;
@@ -23,17 +23,23 @@ namespace WebApi.BLL
             }
             if (cartItemToBeUpdated != null)
             {
-                if (int.Parse(cartItemToBeUpdated.BookQuantity) != -quantity)
-                    status = DBConnection.getObject().updateCart(user, bookId, quantity);
+                if (cartItemToBeUpdated.BookQuantity != -cartItem.BookQuantity)
+                {
+                    Book book = DBConnection.getObject().getBookById(cartItem._Book.BookId).First<Book>();
+                    if (book.BookStock >= cartItemToBeUpdated.BookQuantity + cartItem.BookQuantity)
+                        status = DBConnection.getObject().updateCart(user, cartItem._Book.BookId, cartItem.BookQuantity);
+                    else
+                        status = false;
+                }
                 else
                 {
-                    DBConnection.getObject().deleteCartBook(user, bookId);
+                    DBConnection.getObject().deleteCartBook(user, cartItem._Book.BookId);
                     status = true;
                 }
             }
             else
             {
-                status = DBConnection.getObject().updateCart(user, bookId, quantity);
+                status = DBConnection.getObject().updateCart(user, cartItem._Book.BookId, cartItem.BookQuantity);
             }
 
             return status;

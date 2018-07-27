@@ -7,6 +7,8 @@ import { Claim } from '../models/claim';
 import { ActivatedRoute, Router } from '@angular/router';
 import { User } from '../models/user';
 import { CookieService } from 'ngx-cookie-service';
+import { CartService } from './cart.service';
+import { Cart } from '../models/cart';
 
 @Injectable({
   providedIn: 'root'
@@ -14,7 +16,7 @@ import { CookieService } from 'ngx-cookie-service';
 export class UserAuthenticationService {
   readonly rootUrl = environment.webApiUrl;
   user: User;
-  private logger = new Subject<User>();
+  user$ = new Subject<User>();
 
   constructor(private http: HttpClient, private route: ActivatedRoute, private router: Router, private cookieService: CookieService) { }
 
@@ -24,9 +26,10 @@ export class UserAuthenticationService {
     this.http.post(this.rootUrl + '/user/registration', user)
       .subscribe((data: User) => {
         this.user = data;
-        this.cookieService.set('sessionId', this.user.SessionId, 2,'/','localhost');
+        this.cookieService.set('sessionId', this.user.SessionId, 2, '/', 'localhost');
         localStorage.setItem('user', JSON.stringify(data));
-        this.logger.next(this.user);
+        this.user$.next(this.user);
+        // this.cartService.cart$.next(new Cart(data.CartBookList));
         this.router.navigateByUrl(returnUrl);
       });
     // this.cookieService.set('sessionId', this.user.SessionId, 2, 'localhost', '/', true);
@@ -39,9 +42,10 @@ export class UserAuthenticationService {
       .subscribe((data: User) => {
         this.user = data;
         // console.log(this.user.SessionId);
-        this.cookieService.set('sessionId', this.user.SessionId, 2,'/','localhost');
+        this.cookieService.set('sessionId', this.user.SessionId, 2, '/', 'localhost');
         localStorage.setItem('user', JSON.stringify(data));
-        this.logger.next(this.user);
+        this.user$.next(this.user);
+        // this.cartService.cart$.next(new Cart(data.CartBookList));
         this.router.navigateByUrl(returnUrl);
       });
     // console.log(this.user.SessionId);
@@ -53,15 +57,23 @@ export class UserAuthenticationService {
     this.http.post(this.rootUrl + '/user/logout', {}, { headers: new HttpHeaders().set('Authorization', 'Bearer ' + this.cookieService.get('sessionId')) })
       .subscribe(() => {
         localStorage.removeItem('user');
-        this.logger.next(null);
+        // this.cartService.cart$.next(null);
+        this.user$.next(null);
         this.router.navigateByUrl('/');
         this.cookieService.deleteAll();
-      });
+      },
+        () => {
+          localStorage.removeItem('user');
+          this.user$.next(null);
+          // this.cartService.cart$.next(null);
+          this.router.navigateByUrl('/');
+          this.cookieService.deleteAll();
+        });
   }
 
   getUser(): Observable<User> {
     this.getUserDetails();
-    return this.logger.asObservable();
+    return this.user$.asObservable();
   }
 
   getUserDetails() {
@@ -72,7 +84,8 @@ export class UserAuthenticationService {
         .subscribe((data: User) => {
           this.user = data;
           localStorage.setItem('user', JSON.stringify(this.user));
-          this.logger.next(this.user);
+        // this.cartService.cart$.next(new Cart(data.CartBookList));
+          this.user$.next(this.user);
         }, err => {
           this.cookieService.deleteAll();
           localStorage.removeItem('user');

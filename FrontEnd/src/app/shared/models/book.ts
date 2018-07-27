@@ -24,6 +24,6 @@ export interface Book {
 }
 
 export interface BookCount {
-    BookItem: Book;
-    Count: number;
+    _Book: Book;
+    BookQuantity: number;
 }

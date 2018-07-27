@@ -14,9 +14,12 @@ namespace WebApi.BLL
             DBConnection obj = DBConnection.getObject();
 
             User user = obj.getUser(sessionId);
-            user.CartBookList = obj.getCartsBook(user);
-            user.OrderList = obj.getOrdersByUser(user);
-            user.isAdmin = obj.validateAdmin(user.UserName);
+            if (user != null)
+            {
+                user.CartBookList = obj.getCartsBook(user);
+                user.OrderList = obj.getOrdersByUser(user);
+                user.isAdmin = obj.validateAdmin(user.UserName);
+            }
             return user;
         }
     }

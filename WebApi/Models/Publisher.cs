@@ -10,6 +10,8 @@ namespace WebApi.Models
     {
         public string PublisherName { get; set; }
 
+        public Publisher() { }
+
         public Publisher( string Name)
         {
             PublisherName = Name;

@@ -85,8 +85,10 @@ namespace WebApi.Controllers
             if (sessionId!=null)
             {
                 User user = UserBLL.getUser(sessionId);
-                HttpResponseMessage httpResponse = Request.CreateResponse(HttpStatusCode.Accepted,user);
-                return httpResponse;
+                if(user!=null)
+                    return Request.CreateResponse(HttpStatusCode.Accepted,user);
+                else
+                    return new HttpResponseMessage(HttpStatusCode.Unauthorized);
             }
             return new HttpResponseMessage(HttpStatusCode.Unauthorized);
         }

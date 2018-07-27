@@ -10,6 +10,8 @@ namespace WebApi.Models
     {
         public string AuthorName { get; set; }
 
+        public Author() { }
+
         public Author(string name)
         {
             this.AuthorName = name;

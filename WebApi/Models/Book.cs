@@ -8,7 +8,7 @@ namespace WebApi.Models
 {
     public class Book
     {
-        public string BookId{ get; }
+        public string BookId{ get; set; }
         public string BookTitle { get; set; }
         public Genre BookGenre { get; set; }
         public Author BookAuthor { get; set; }
@@ -18,6 +18,8 @@ namespace WebApi.Models
         public double BookCost { get; set; }
         public string BookThumb { get; set; }
         public int BookStock { get; set; }
+
+        public Book() { }
         
         public Book( string BookTitle, Genre _Genre, Author _Author, string Description, Publisher _Publisher, 
             int Rating, double Cost, string Thumb, int Stock)

@@ -15,6 +15,7 @@ import { MatAutocompleteModule } from '@angular/material';
 import { MatDialogModule } from '@angular/material/dialog';
 import { MatTableModule } from '@angular/material/table';
 import { MatBadgeModule } from '@angular/material/badge';
+import { MatExpansionModule } from '@angular/material/expansion';
 
 import { AppComponent } from './app.component';
 import { BsNavbarComponent } from './bs-navbar/bs-navbar.component';
@@ -59,7 +60,7 @@ import { BookCardComponent } from './book-card/book-card.component';
     ReactiveFormsModule,
     BrowserAnimationsModule, MatIconModule, MatTabsModule, MatCardModule, MatButtonModule, MatFormFieldModule, MatInputModule,
     MatTableModule, MatPaginatorModule, MatSortModule, MatSnackBarModule, MatListModule,
-    MatAutocompleteModule, MatBadgeModule,
+    MatAutocompleteModule, MatBadgeModule, MatExpansionModule,
     HttpClientModule,
     NgbModule.forRoot(),
     RouterModule.forRoot([

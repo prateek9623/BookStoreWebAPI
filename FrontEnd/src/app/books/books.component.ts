@@ -1,8 +1,13 @@
 import { Component, OnInit } from '@angular/core';
 import { BookService } from '../shared/services/book.service';
 import { ActivatedRoute } from '@angular/router';
-import { Book } from '../shared/models/book';
+import { Book, BookCount } from '../shared/models/book';
 import { switchMap } from 'rxjs/operators';
+import { CartService } from '../shared/services/cart.service';
+import { Observable } from 'rxjs';
+import { Cart } from '../shared/models/cart';
+import { User } from '../shared/models/user';
+import { UserAuthenticationService } from '../shared/services/user-authentication.service';
 
 @Component({
   selector: 'app-books',
@@ -16,11 +21,19 @@ export class BooksComponent implements OnInit {
   publishers$;
   genre: string;
   publisher: string;
+  cart: Cart = new Cart([]);
+  user$: Observable<User>;
 
-  constructor(private booksService: BookService, route: ActivatedRoute) {
-    booksService.getBooks().pipe(switchMap(books => {
+  constructor(private booksService: BookService, private route: ActivatedRoute, private cartService: CartService,
+    private userService: UserAuthenticationService) {
+    this.cartService.getCart().subscribe(x => { this.cart = x; });
+  }
+
+  async ngOnInit() {
+    this.user$ = this.userService.getUser();
+    this.booksService.getBooks().pipe(switchMap(books => {
       this.books = books;
-      return route.queryParamMap;
+      return this.route.queryParamMap;
     })).subscribe(params => {
       this.genre = params.get('genre');
       this.publisher = params.get('publisher');
@@ -32,12 +45,25 @@ export class BooksComponent implements OnInit {
         this.filteredBooks = this.books;
       }
     });
-    this.genres$ = booksService.getGenres();
-    this.publishers$ = booksService.getPublishers();
+    this.genres$ = this.booksService.getGenres();
+    this.publishers$ = this.booksService.getPublishers();
     this.filteredBooks = this.books;
   }
 
-  ngOnInit() {
+
+  addToCart(book: Book) {
+    const bookCount: BookCount = {
+      _Book: book,
+      BookQuantity: 1
+    };
+    this.cartService.addToCart(bookCount);
   }
 
+  removeFromCart(book: Book) {
+    const bookCount: BookCount = {
+      _Book: book,
+      BookQuantity: -1
+    };
+    this.cartService.addToCart(bookCount);
+  }
 }

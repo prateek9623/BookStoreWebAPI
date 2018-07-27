@@ -231,15 +231,15 @@ namespace DAL
             return bookList;
         }
 
-        public IList<Book> getBookByName(string bookTitle)
+        public IList<Book> getBookById(string bookId)
         {
             IList<Book> bookList = new List<Book>();
             using (MySqlConnection con = new MySqlConnection(conString))
             {
                 con.Open();
-                string cmdString = "select * from getbooks where BookTitle = @bookName";
+                string cmdString = "select * from getbooks where BookId = @bookId";
                 MySqlCommand cmd = new MySqlCommand(cmdString, con);
-                cmd.Parameters.Add(new MySqlParameter("@bookName", bookTitle));
+                cmd.Parameters.Add(new MySqlParameter("@bookId", bookId));
                 try
                 {
                     MySqlDataReader reader = cmd.ExecuteReader();
@@ -613,7 +613,7 @@ namespace DAL
                         foreach (Book book in bookList)
                         {
                             if(book.BookId==bookId)
-                                cartsBook.Add(new Cart(book, reader["CartQuantity"].ToString()));
+                                cartsBook.Add(new Cart(book, int.Parse(reader["CartQuantity"].ToString())));
                         }
                     }
                     reader.Close();
@@ -691,7 +691,7 @@ namespace DAL
                     {
                         if (b.BookId.Equals(c._Book.BookId))
                         {
-                            if (b.BookStock < int.Parse(c.BookQuantity))
+                            if (b.BookStock < c.BookQuantity)
                             {
                                 return false;
                             }

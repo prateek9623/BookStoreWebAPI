@@ -28,11 +28,9 @@ namespace WebApi.Controllers
             string sessionId = Request.Headers.Authorization.Parameter;
             if (sessionId != null && dbObj.checkSession(ref sessionId))
             {
-                string bookId = obj.Value<String>("id");
-                int bookQuantity = obj.Value<int>("quantity");
-
+                Cart cartItem = obj.ToObject<Cart>();
                 User user = UserBLL.getUser(sessionId);
-                if (CartBLL.updateCart(user, bookId, bookQuantity))
+                if (CartBLL.updateCart(user, cartItem))
                     return Request.CreateResponse(HttpStatusCode.Accepted, UserBLL.getUser(sessionId));
                 else
                     return Request.CreateResponse(HttpStatusCode.BadRequest, user);
