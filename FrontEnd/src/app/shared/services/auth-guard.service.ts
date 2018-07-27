@@ -2,14 +2,12 @@ import { Injectable } from '@angular/core';
 import { CanActivate, Router, RouterStateSnapshot } from '@angular/router';
 import { UserAuthenticationService } from './user-authentication.service';
 import { map } from 'rxjs/operators';
-import { Claim } from '../models/claim';
 import { Observable } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthGuardService implements CanActivate {
-  user: Claim;
   constructor(private router: Router, private userAuthenticationService: UserAuthenticationService) { }
 
   canActivate(route, state: RouterStateSnapshot) {

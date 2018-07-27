@@ -6,10 +6,12 @@
   </button>
 
   <div class="collapse navbar-collapse" id="navbarsExampleDefault">
-    <ul class="navbar-nav mr-auto">
+    <ul class="navbar-nav mr-auto ">
       <li class="nav-item">
         <a class="nav-link" routerLink="/shopping-cart">Shopping Cart</a>
       </li>
+    </ul>
+    <ul class="navbar-nav justify-content-end">
       <ng-template #anonymousUser>
         <li class="nav-item">
           <a class="nav-link" routerLink="/login">Login</a>
@@ -17,11 +19,11 @@
       </ng-template>
 
       <li ngbDropdown *ngIf="claim$ | async as claim; else anonymousUser" class="nav-item dropdown">
-        <a ngbDropdownToggle class="nav-link dropdown-toggle" id="dropdown01" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">{{claim.username}}</a>
+        <a ngbDropdownToggle class="nav-link dropdown-toggle" id="dropdown01" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">{{claim.FirstName}} {{claim.LastName}}</a>
         <div ngbDropdownMenu class="dropdown-menu" aria-labelledby="dropdown01">
           <a class="dropdown-item" routerLink="my/orders">My Orders</a>
           <a class="dropdown-item" routerLink="/admin/orders" *ngIf="claim.isAdmin">Manage Orders</a>
-          <a class="dropdown-item" routerLink="/admin/books" *ngIf="claim.isAdmin">Manage Products</a>
+          <a class="dropdown-item" routerLink="/admin/books" *ngIf="claim.isAdmin">Manage Books</a>
           <a class="dropdown-item" (click)="logOut()">Log Out</a>
         </div>
       </li>

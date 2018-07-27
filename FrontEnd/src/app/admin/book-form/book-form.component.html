@@ -1,0 +1,108 @@
+<div class="row">
+  <div class="col-md-6">
+    <mat-card>
+      <form #AddBookForm="ngForm" (ngSubmit)="save()">
+        <mat-form-field class="col-md-12">
+          <input matInput type="text" id="bookTitle" class="validate" required name="bookTitle" #bookTitle="ngModel" [(ngModel)]="book.BookTitle"
+            placeholder="Book Title">
+          <mat-error *ngIf="bookTitle.valid || (bookTitle.pristine && !AddBookForm.submitted)">
+            Book Title is required.
+          </mat-error>
+        </mat-form-field>
+        <mat-form-field class="col-md-12">
+          <input matInput type="text" id="bookGenre" class="validate" required name="bookGenre" #bookGenre="ngModel" [(ngModel)]="book.BookGenre.GenreName"
+            placeholder="Book Genre">
+          <!-- [formControl]="genreField" [matAutocomplete]="autoGenre" -->
+          <mat-error *ngIf="bookGenre.valid || (bookGenre.pristine && !AddBookForm.submitted)">
+            Genre is required.
+          </mat-error>
+          <!-- <mat-autocomplete autoActiveFirstOption #autoGenre="matAutocomplete">
+            <mat-option *ngFor="let option of filteredGenre | async" [value]="option">
+              {{option}}
+            </mat-option>
+          </mat-autocomplete> -->
+        </mat-form-field>
+        <mat-form-field class="col-md-12">
+          <input matInput type="text" id="bookAuthor" class="validate" required name="bookAuthor" #bookAuthor="ngModel" [(ngModel)]="book.BookAuthor.AuthorName"
+            placeholder="Book Author">
+          <mat-error *ngIf="bookAuthor.valid || (bookAuthor.pristine && !AddBookForm.submitted)">
+            Author is required.
+          </mat-error>
+        </mat-form-field>
+        <mat-form-field class="col-md-12">
+          <input matInput type="text" id="bookPublisher" class="validate" required name="bookPublisher" #bookPublisher="ngModel" [(ngModel)]="book.BookPublisher.PublisherName"
+            placeholder="Book Publisher">
+          <mat-error *ngIf="bookPublisher.valid || (bookPublisher.pristine && !AddBookForm.submitted)">
+            Publisher is required.
+          </mat-error>
+        </mat-form-field>
+        <mat-form-field class="col-md-12">
+          <textarea matInput id="bookDescription" class="validate" required name="bookDescription" #bookDescription="ngModel" [(ngModel)]="book.BookDescription"
+            placeholder="Book Description"></textarea>
+          <mat-error *ngIf="bookDescription.valid || (bookDescription.pristine && !AddBookForm.submitted)">
+            Description is required.
+          </mat-error>
+        </mat-form-field>
+        <mat-form-field class="col-md-12">
+          <input matInput type="number" id="bookCost" class="validate" required name="bookCost" #bookCost="ngModel" [(ngModel)]="book.BookCost"
+            placeholder="Book Cost">
+          <span matPrefix>₹&nbsp;</span>
+          <span matSuffix>.00</span>
+          <mat-error *ngIf="bookCost.valid || (bookCost.pristine && !AddBookForm.submitted)">
+            Cost is required.
+          </mat-error>
+        </mat-form-field>
+        <mat-form-field class="col-md-12">
+          <input matInput type="number" id="bookStock" class="validate" required name="bookStock" #bookStock="ngModel" [(ngModel)]="book.BookStock"
+            placeholder="Book Stock">
+          <mat-error *ngIf="bookStock.valid || (bookStock.pristine && !AddBookForm.submitted)">
+            Stock is required.
+          </mat-error>
+        </mat-form-field>
+        <mat-form-field class="col-md-12">
+          <input matInput type="text" id="bookThumb" class="validate" required name="bookThumb" #bookThumb="ngModel" [(ngModel)]="book.BookThumb"
+            placeholder="Book Image URL">
+          <mat-error *ngIf="bookThumb.valid || (bookThumb.pristine && !AddBookForm.submitted)">
+            Image URL is required.
+          </mat-error>
+        </mat-form-field>
+        <hr class="mb-4">
+        <button mat-raised-button type="submit" color="primary" [disabled]="!AddBookForm.valid">Save Book</button>
+      </form>
+    </mat-card>
+  </div>
+  <div class="col-md-6">
+    <mat-card *ngIf="bookTitle.valid">
+      <mat-card-header>
+        <mat-card-title>
+          <h3>{{bookTitle.value}}</h3>
+        </mat-card-title>
+      </mat-card-header>
+      <hr>
+      <div style="padding: 0.5em">
+        <img *ngIf="bookThumb.valid && bookThumb.value!==''" mat-card-image [src]="bookThumb.value">
+      </div>
+      <mat-card-content>
+        <div *ngIf="bookGenre.valid">
+          <b>Genre:</b> {{bookGenre.value}}
+        </div>
+        <div *ngIf="bookAuthor.valid">
+          <b>Author:</b> {{bookAuthor.value}}
+        </div>
+        <div *ngIf="bookPublisher.valid">
+          <b>Publisher:</b> {{bookPublisher.value}}
+        </div>
+        <div *ngIf="bookDescription.valid">
+          <b>Description:</b>
+          <p>{{bookDescription.value}}</p>
+        </div>
+        <div *ngIf="bookCost.valid && bookCost.value!==0">
+          <b>Cost:</b> {{bookCost.value | currency:'INR':true }}
+        </div>
+        <div *ngIf="bookStock.valid && bookStock.value!==0">
+          <b>Current Stock:</b> {{bookStock.value}}
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>

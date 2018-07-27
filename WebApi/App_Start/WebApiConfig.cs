@@ -11,7 +11,10 @@ namespace WebApi
         public static void Register(HttpConfiguration config)
         {
             // Web API configuration and services
-            config.EnableCors(new EnableCorsAttribute(origins: "http://localhost:4200", headers: "*", methods: "*"));
+            var cors = new EnableCorsAttribute(origins: "http://localhost:4200", headers: "*", methods: "*");
+            cors.SupportsCredentials = true;
+            config.EnableCors(cors);
+
             // Web API routes
             config.MapHttpAttributeRoutes();
 

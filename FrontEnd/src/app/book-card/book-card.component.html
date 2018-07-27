@@ -1,0 +1,22 @@
+<mat-card class="gridColumn card d-flex">
+  <mat-card-header>
+    <mat-card-title>{{book.BookTitle}}</mat-card-title>
+    <mat-card-subtitle>{{book.BookAuthor.AuthorName}}</mat-card-subtitle>
+  </mat-card-header>
+  <img class="m-auto" mat-card-image [src]="book.BookThumb">
+  <hr>
+  <mat-card-content>
+    <div class="d-flex justify-content-between">
+      <div>
+        {{book.BookCost | currency: 'INR'}}
+      </div>
+      <div>
+        Rating:
+        <mat-icon [matBadge]="book.BookRating" matBadgeColor="accent">star</mat-icon>
+      </div>
+    </div>
+  </mat-card-content>
+  <mat-card-actions>
+    <a mat-raised-button color="primary" href="#">Add to cart</a>
+  </mat-card-actions>
+</mat-card>

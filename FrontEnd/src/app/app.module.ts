@@ -1,14 +1,20 @@
 import { BrowserModule } from '@angular/platform-browser';
-import { NgModule } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { NgModule, Component } from '@angular/core';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { CookieService } from 'ngx-cookie-service';
 
-import { MatTabsModule } from '@angular/material';
-import { MatCardModule } from '@angular/material';
+import { MatTabsModule, MatPaginatorModule, MatSortModule, MatSnackBarModule } from '@angular/material';
+import { MatListModule } from '@angular/material/list';
+import { MatCardModule, MatIconModule } from '@angular/material';
 import { MatFormFieldModule, MatInputModule } from '@angular/material';
 import { MatButtonModule } from '@angular/material/button';
+import { MatAutocompleteModule } from '@angular/material';
+import { MatDialogModule } from '@angular/material/dialog';
+import { MatTableModule } from '@angular/material/table';
+import { MatBadgeModule } from '@angular/material/badge';
 
 import { AppComponent } from './app.component';
 import { BsNavbarComponent } from './bs-navbar/bs-navbar.component';
@@ -26,7 +32,8 @@ import { HttpClientModule } from '@angular/common/http';
 import { UserAuthenticationService } from './shared/services/user-authentication.service';
 import { AuthGuardService } from './shared/services/auth-guard.service';
 import { AdminAuthGuardService } from './shared/services/admin-auth-guard.service';
-
+import { BookFormComponent } from './admin/book-form/book-form.component';
+import { BookCardComponent } from './book-card/book-card.component';
 // import { RegisterComponent } from './user-authentication/register/register.component';
 
 @NgModule({
@@ -42,17 +49,21 @@ import { AdminAuthGuardService } from './shared/services/admin-auth-guard.servic
     AdminBooksComponent,
     AdminOrdersComponent,
     LoginComponent,
-    EqualValidator
-    // RegisterComponent
+    EqualValidator,
+    BookFormComponent,
+    BookCardComponent
   ],
   imports: [
     BrowserModule,
     FormsModule,
-    BrowserAnimationsModule, MatTabsModule, MatCardModule, MatButtonModule, MatFormFieldModule, MatInputModule,
+    ReactiveFormsModule,
+    BrowserAnimationsModule, MatIconModule, MatTabsModule, MatCardModule, MatButtonModule, MatFormFieldModule, MatInputModule,
+    MatTableModule, MatPaginatorModule, MatSortModule, MatSnackBarModule, MatListModule,
+    MatAutocompleteModule, MatBadgeModule,
     HttpClientModule,
     NgbModule.forRoot(),
     RouterModule.forRoot([
-      { path: '', component: HomeComponent },
+      { path: '', component: BooksComponent },
       { path: 'books', component: BooksComponent },
       { path: 'shopping-cart', component: ShoppingCartComponent },
       { path: 'login', component: LoginComponent },
@@ -60,11 +71,13 @@ import { AdminAuthGuardService } from './shared/services/admin-auth-guard.servic
       { path: 'check-out', component: CheckOutComponent, canActivate: [AuthGuardService] },
       { path: 'order-success', component: OrderSuccessComponent, canActivate: [AuthGuardService] },
       { path: 'my/orders', component: MyOrdersComponent, canActivate: [AuthGuardService] },
-      { path: 'admin/books', component: AdminBooksComponent, canActivate: [AuthGuardService, AdminAuthGuardService] },
-      { path: 'admin/orders', component: AdminOrdersComponent, canActivate: [AuthGuardService, AdminAuthGuardService] }
+      { path: 'admin/orders', component: AdminOrdersComponent, canActivate: [AuthGuardService, AdminAuthGuardService] },
+      { path: 'admin/books/new', component: BookFormComponent, canActivate: [AuthGuardService, AdminAuthGuardService] },
+      { path: 'admin/book/:id', component: BookFormComponent, canActivate: [AuthGuardService, AdminAuthGuardService] },
+      { path: 'admin/books', component: AdminBooksComponent, canActivate: [AuthGuardService, AdminAuthGuardService] }
     ])
   ],
-  providers: [UserAuthenticationService, AuthGuardService, AdminAuthGuardService],
+  providers: [UserAuthenticationService, AuthGuardService, AdminAuthGuardService, CookieService],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

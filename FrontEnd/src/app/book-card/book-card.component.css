@@ -11,28 +11,9 @@ img {
   height: 25rem;
   margin: 0.5rem;
 }
+
 @media screen and (max-width:600px) {
   .gridColumn {
     width: 100%;
   }
-}
-
-.card-footer{
-  padding: 0;
-}
-
-.gridRow:after {
-  content: "";
-  display: table;
-  clear: both;
-}
-
-
-.active{
-   background-color: lightgray;
-}
-
-.sticky-top{
-  position: sticky;
-  top:80px;
 }

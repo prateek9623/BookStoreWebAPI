@@ -4,5 +4,4 @@ export interface AppUser {
     lastName: string;
     email: string;
     password: string;
-    repeat?: string;
 }

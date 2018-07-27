@@ -29,9 +29,9 @@ namespace DAL
         }
 
         //BookDal
-        public IList<Author> getAuthors()
+        public IList<string> getAuthors()
         {
-            IList<Author> authorList = new List<Author>();
+            IList<string> authorList = new List<string>();
             MySqlConnection con = new MySqlConnection(conString);
             string cmdString = "select * from authors";
             MySqlCommand cmd = new MySqlCommand(cmdString, con);
@@ -41,7 +41,7 @@ namespace DAL
                 MySqlDataReader reader = cmd.ExecuteReader();
                 while (reader.Read()) {
                     string name = reader["AuthorName"].ToString();
-                    authorList.Add(new Author(name));
+                    authorList.Add(name);
                 }
                 reader.Close();
             }
@@ -78,9 +78,9 @@ namespace DAL
             return false;
         }
 
-        public IList<Genre> getGenre()
+        public IList<string> getGenre()
         {
-            IList<Genre> genreList = new List<Genre>();
+            IList<string> genreList = new List<string>();
             MySqlConnection con = new MySqlConnection(conString);
             string cmdString = "select * from genrelist";
             MySqlCommand cmd = new MySqlCommand(cmdString, con);
@@ -91,7 +91,7 @@ namespace DAL
                 while (reader.Read())
                 {
                     string name = reader["GenreName"].ToString();
-                    genreList.Add(new Genre(name));
+                    genreList.Add(name);
                 }
                 reader.Close();
             }
@@ -131,9 +131,9 @@ namespace DAL
             return false;
         }
 
-        public IList<Publisher> getPublisher()
+        public IList<string> getPublisher()
         {
-            IList<Publisher> publisherList = new List<Publisher>();
+            IList<string> publisherList = new List<string>();
             MySqlConnection con = new MySqlConnection(conString);
             string cmdString = "select * from publishers";
             MySqlCommand cmd = new MySqlCommand(cmdString, con);
@@ -144,7 +144,7 @@ namespace DAL
                 while (reader.Read())
                 {
                     string name = reader["PublisherName"].ToString();
-                    publisherList.Add(new Publisher( name));
+                    publisherList.Add(name);
                 }
                 reader.Close();
             }
@@ -209,7 +209,6 @@ namespace DAL
                             string thumb = reader["BookThumb"].ToString();
                             string description = reader["BookDescription"].ToString();
                             int stock = int.Parse(reader["BookStock"].ToString());
-                            if (stock > 0)
                                 bookList.Add(new Book(id, title, genre, author, description, publisher, rating, cost, thumb, stock));
                         }
                         reader.Close();
@@ -282,13 +281,13 @@ namespace DAL
                 {
                     con.Open();
                     string cmdString = "";
-                    cmdString = "insert into books(books.BookTitle, books.BookGenre, books.BookAuthorId,books.BookDescription,books.BookPublisherId,books.BookCost,books.BookStock)"
-                                + " values(@BookTitle, (select genrelist.GenreId from genrelist where genrelist.GenreName = @GenreName),(select authors.AuthorId from authors where authors.AuthorName = @AuthorName)," +
-                                " @BookDescription, (select publishers.PublisherId from publishers where publishers.PublisherName = @PublisherName), @BookCost, @BookStock)";
-
-                    //cmdString = "insert into books(books.BookTitle, books.BookGenre, books.BookAuthorId,books.BookDescription,books.BookPublisherId,books.BookCost,books.BookThumb,books.BookStock)"
+                    //cmdString = "insert into books(books.BookTitle, books.BookGenre, books.BookAuthorId,books.BookDescription,books.BookPublisherId,books.BookCost,books.BookStock)"
                     //            + " values(@BookTitle, (select genrelist.GenreId from genrelist where genrelist.GenreName = @GenreName),(select authors.AuthorId from authors where authors.AuthorName = @AuthorName)," +
-                    //            " @BookDescription, (select publishers.PublisherId from publishers where publishers.PublisherName = @PublisherName), @BookCost, @BookThumb , @BookStock)";
+                    //            " @BookDescription, (select publishers.PublisherId from publishers where publishers.PublisherName = @PublisherName), @BookCost, @BookStock)";
+
+                    cmdString = "insert into books(books.BookTitle, books.BookGenre, books.BookAuthorId,books.BookDescription,books.BookPublisherId,books.BookCost,books.BookThumb,books.BookStock)"
+                                + " values(@BookTitle, (select genrelist.GenreId from genrelist where genrelist.GenreName = @GenreName),(select authors.AuthorId from authors where authors.AuthorName = @AuthorName)," +
+                                " @BookDescription, (select publishers.PublisherId from publishers where publishers.PublisherName = @PublisherName), @BookCost, @BookThumb , @BookStock)";
                     MySqlCommand cmd = new MySqlCommand(cmdString, con);
                     cmd.Parameters.Add(new MySqlParameter("@BookTitle", book.BookTitle));
                     cmd.Parameters.Add(new MySqlParameter("@GenreName", book.BookGenre.GenreName));
@@ -296,9 +295,51 @@ namespace DAL
                     cmd.Parameters.Add(new MySqlParameter("@BookDescription", book.BookDescription));
                     cmd.Parameters.Add(new MySqlParameter("@PublisherName", book.BookPublisher.PublisherName));
                     cmd.Parameters.Add(new MySqlParameter("@BookCost", book.BookCost));
-                    //cmd.Parameters.Add(new MySqlParameter("@BookThumb", book.BookThumb));
+                    cmd.Parameters.Add(new MySqlParameter("@BookThumb", book.BookThumb));
                     cmd.Parameters.Add(new MySqlParameter("@BookStock", book.BookStock));
                     cmd.ExecuteNonQuery();
+
+                    return true;
+                }
+            }
+            catch (SqlException ex)
+            {
+                Console.WriteLine(ex);
+            }
+            return false;
+        }
+        
+        public bool updateBook(Book book)
+        {
+            try
+            {
+                using (MySqlConnection con = new MySqlConnection(conString))
+                {
+                    con.Open();
+                    string cmdString = "";
+                    cmdString = "UPDATE `bookstore`.`books`"
+                                +"SET"
+                                +"`BookTitle` = @BookTitle,"
+                                + "`BookGenre` = (select genrelist.GenreId from genrelist where genrelist.GenreName = @GenreName),"
+                                + "`BookAuthorId` = (select authors.AuthorId from authors where authors.AuthorName = @AuthorName),"
+                                + "`BookDescription` = @BookDescription,"
+                                + "`BookPublisherId` = (select publishers.PublisherId from publishers where publishers.PublisherName = @PublisherName),"
+                                + "`BookCost` = @BookCost,"
+                                +"`BookThumb` = @BookThumb,"
+                                +"`BookStock` = @BookStock"
+                                +" WHERE `BookId` = @BookId";
+
+                    MySqlCommand cmd = new MySqlCommand(cmdString, con);
+                    cmd.Parameters.Add(new MySqlParameter("@BookTitle", book.BookTitle));
+                    cmd.Parameters.Add(new MySqlParameter("@GenreName", book.BookGenre.GenreName));
+                    cmd.Parameters.Add(new MySqlParameter("@AuthorName", book.BookAuthor.AuthorName));
+                    cmd.Parameters.Add(new MySqlParameter("@BookDescription", book.BookDescription));
+                    cmd.Parameters.Add(new MySqlParameter("@PublisherName", book.BookPublisher.PublisherName));
+                    cmd.Parameters.Add(new MySqlParameter("@BookCost", book.BookCost));
+                    cmd.Parameters.Add(new MySqlParameter("@BookThumb", book.BookThumb));
+                    cmd.Parameters.Add(new MySqlParameter("@BookStock", book.BookStock));
+                    cmd.Parameters.Add(new MySqlParameter("@BookId", book.BookId));
+                    int count = cmd.ExecuteNonQuery();
 
                     return true;
                 }
@@ -310,6 +351,7 @@ namespace DAL
             return false;
         }
         
+
         public IList<UserReview> getBookReviews(Book book)
         {
             IList < UserReview > reviewList = new List<UserReview>();
@@ -340,7 +382,7 @@ namespace DAL
             using(MySqlConnection con = new MySqlConnection(conString))
             {
                 con.Open();
-                string cmdString = "select UserId from userreview where UserUname = '@userUname'";
+                string cmdString = "select UserId from userreview where UserUname = @userUname";
                 using(MySqlCommand cmd = new MySqlCommand(cmdString))
                 {
                     cmd.Parameters.Add(new MySqlParameter("@userUname", review.ReviewOwner.UserName));
@@ -356,7 +398,7 @@ namespace DAL
                     }
 
                 }
-                cmdString = "INSERT INTO `bookstore`.`customerreview`(`CustomerId`,`BookId`,`CustomerRating`,`CustomerComment`) VALUES(@userId,@bookId,@bookRating,'@bookComment')";
+                cmdString = "INSERT INTO `bookstore`.`customerreview`(`CustomerId`,`BookId`,`CustomerRating`,`CustomerComment`) VALUES(@userId,@bookId,@bookRating,@bookComment)";
                 using(MySqlCommand cmd = new MySqlCommand(cmdString))
                 {
                     cmd.Parameters.Add(new MySqlParameter("@userId", userId));
@@ -427,7 +469,7 @@ namespace DAL
             return usersList;
         }
 
-        public bool validateUser(User user, string pass)
+        public bool validateUser(string user, string pass)
         {
             bool status = false;
             try
@@ -437,13 +479,12 @@ namespace DAL
                     con.Open();
                     string cmdString = "SELECT `userdetails`.`UserId`, `userdetails`.`UserUname`, `userdetails`.`UserFname`, `userdetails`.`UserLname`,`userdetails`.`UserEmail` FROM `bookstore`.`userdetails`WHERE userdetails.UserUname = @userName AND userdetails.UserPassword = @password";
                     MySqlCommand cmd = new MySqlCommand(cmdString, con);
-                    cmd.Parameters.Add(new MySqlParameter("@userName", user.UserName));
+                    cmd.Parameters.Add(new MySqlParameter("@userName", user));
                     cmd.Parameters.Add(new MySqlParameter("@password", pass));
 
                     MySqlDataReader userDetails = cmd.ExecuteReader();
                     if (userDetails.HasRows)
                     {
-                        getUserDetails(user);
                         status = true;
                     }
                     else
@@ -459,36 +500,29 @@ namespace DAL
             return status;
         }
 
-        public bool getUserDetails(User user)
+        public User getUser(string sessionId)
         {
-            bool status = false;
             try
             {
                 using (MySqlConnection con = new MySqlConnection(conString))
                 {
                     con.Open();
-                    string cmdString = "SELECT `userdetails`.`UserId`, `userdetails`.`UserUname`, `userdetails`.`UserFname`, `userdetails`.`UserLname`,`userdetails`.`UserEmail` FROM `bookstore`.`userdetails`WHERE userdetails.UserUname = @userName";
+                    string cmdString = "select * from userdetails where userid = (select sessionlog.SessionUserId from sessionlog where SessionId =@sessionId);";
                     MySqlCommand cmd = new MySqlCommand(cmdString, con);
-                    cmd.Parameters.Add(new MySqlParameter("@userName", user.UserName));
+                    cmd.Parameters.Add(new MySqlParameter("@sessionId", sessionId));
 
                     MySqlDataReader userDetails = cmd.ExecuteReader();
                     if (userDetails.HasRows)
                     {
                         userDetails.Read();
-                        user.UserId = userDetails["UserId"].ToString();
-                        user.FirstName = userDetails["UserFname"].ToString();
-                        user.LastName = userDetails["UserLname"].ToString();
-                        user.Email = userDetails["UserEmail"].ToString();
+                        User user = new User(userDetails["UserUname"].ToString(), userDetails["UserFname"].ToString(), userDetails["UserLname"].ToString(), userDetails["UserEmail"].ToString());
                         userDetails.Close();
-
-                        user.CartBookList = getCartsBook(user);
-                        user.OrderList = getOrdersByUser(user);
-
-                        status = true;
+                        user.SessionId = sessionId;
+                        return user;
                     }
                     else
                     {
-                        status = false;
+                        return null;
                     }
                 }
             }
@@ -496,10 +530,46 @@ namespace DAL
             {
                 Console.WriteLine(ex.StackTrace);
             }
-            return status;
+            return null;
         }
 
-        public bool validateAdmin(User user)
+        //public User getUserDetails(string sessionId)
+        //{
+        //    try
+        //    {
+        //        using (MySqlConnection con = new MySqlConnection(conString))
+        //        {
+        //            con.Open();
+        //            string cmdString = "select * from userdetails where userid = (select sessionlog.SessionUserId from sessionlog where SessionId =@sessionId);";
+        //            MySqlCommand cmd = new MySqlCommand(cmdString, con);
+        //            cmd.Parameters.Add(new MySqlParameter("@sessionId", sessionId));
+
+        //            MySqlDataReader userDetails = cmd.ExecuteReader();
+        //            if (userDetails.HasRows)
+        //            {
+        //                userDetails.Read();
+        //                User user = new User(userDetails["UserUname"].ToString(), userDetails["UserFname"].ToString(), userDetails["UserLname"].ToString(), userDetails["UserEmail"].ToString());
+        //                userDetails.Close();
+
+        //                user.CartBookList = getCartsBook(user);
+        //                user.OrderList = getOrdersByUser(user);
+        //                user.isAdmin=validateAdmin(user.UserName);
+        //                return user;
+        //            }
+        //            else
+        //            {
+        //                return null;
+        //            }
+        //        }
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        Console.WriteLine(ex.StackTrace);
+        //    }
+        //    return null;
+        //}
+
+        public bool validateAdmin(string user)
         {
             bool status = false;
             try
@@ -509,7 +579,7 @@ namespace DAL
                     con.Open();
                     string cmdstring = "select * from userdetails where UserRole = 'admin' && UserUname = @userName";
                     MySqlCommand cmd = new MySqlCommand(cmdstring, con);
-                    cmd.Parameters.Add(new MySqlParameter("@userName", user.UserName));
+                    cmd.Parameters.Add(new MySqlParameter("@userName", user));
                     MySqlDataReader dataset = cmd.ExecuteReader();
                     if (dataset.HasRows)
                     {
@@ -560,7 +630,7 @@ namespace DAL
             return cartsBook;
         }
 
-        public bool addBookToCart(User user,Book book, int quantity)
+        public bool updateCart(User user,string bookId, int quantity)
         {
             bool status = false;
             try
@@ -568,11 +638,34 @@ namespace DAL
                 using (MySqlConnection con = new MySqlConnection(conString))
                 {
                     con.Open();
-                    string cmdstring = "INSERT INTO `bookstore`.`cart`(`CartCusId`,`CartBookId`,`CartQuantity`)VALUES('(select `UserId form userdetails where UserName = '@username')','@bookId',@quantity) on duplicate key update `CartQuantiy` = values(`CartQuantity`)";
+                    string cmdstring = "INSERT INTO `bookstore`.`cart`(`CartCusId`,`CartBookId`,`CartQuantity`)VALUES((select `UserId` from userdetails where UserUname = @userName),@bookId,@quantity) on duplicate key update `CartQuantity` = `CartQuantity` +@quantity";
                     MySqlCommand cmd = new MySqlCommand(cmdstring, con);
                     cmd.Parameters.Add(new MySqlParameter("@userName", user.UserName));
-                    cmd.Parameters.Add(new MySqlParameter("@bookId", book.BookId));
+                    cmd.Parameters.Add(new MySqlParameter("@bookId", bookId));
                     cmd.Parameters.Add(new MySqlParameter("@quantity", quantity));
+                    cmd.ExecuteNonQuery();
+                    status = true;
+                }
+            }
+            catch (SqlException ex)
+            {
+                Console.Write(ex);
+            }
+            return status;
+        }
+
+        public bool  deleteCartBook(User user, string bookId)
+        {
+            bool status = false;
+            try
+            {
+                using (MySqlConnection con = new MySqlConnection(conString))
+                {
+                    con.Open();
+                    string cmdstring = "delete from `bookstore`.`cart` where `CartCusId`=(select `UserId` from userdetails where UserUname = @userName) and `CartBookId`= @bookId";
+                    MySqlCommand cmd = new MySqlCommand(cmdstring, con);
+                    cmd.Parameters.Add(new MySqlParameter("@userName", user.UserName));
+                    cmd.Parameters.Add(new MySqlParameter("@bookId", bookId));
                     cmd.ExecuteNonQuery();
                     status = true;
                 }
@@ -584,46 +677,44 @@ namespace DAL
             return status;
         }
 
-        public bool remBookFromCart(User user, Book book, int remQuantity)
-        {
-            bool status = false;
-            try
-            {
-                using (MySqlConnection con = new MySqlConnection(conString))
-                {
-                    con.Open();
-                    string cmdstring = "update `bookstore`.`cart` set `CartQuantity` = `CartQuantity- @quantity where CartCustId=('(select `UserId form userdetails where UserName = '@username')' and CartBookId='@bookId')";
-                    MySqlCommand cmd = new MySqlCommand(cmdstring, con);
-                    cmd.Parameters.Add(new MySqlParameter("@userName", user.UserName));
-                    cmd.Parameters.Add(new MySqlParameter("@bookId", book.BookId));
-                    cmd.Parameters.Add(new MySqlParameter("@quantity", remQuantity));
-                    cmd.ExecuteNonQuery();
-                    status = true;
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.Write(ex); 
-            }
-            return status;
-        }
-
         public bool addOrder(User user, Order order)
         {
             bool status = false;
             try
             {
+                IList<Cart> cart = getCartsBook(user);
+                IList<Book> books = getBooks();
+
+                foreach (Cart c in cart)
+                {
+                    foreach (Book b in books)
+                    {
+                        if (b.BookId.Equals(c._Book.BookId))
+                        {
+                            if (b.BookStock < int.Parse(c.BookQuantity))
+                            {
+                                return false;
+                            }
+                        }
+                    }
+                }
+
                 using (MySqlConnection con = new MySqlConnection(conString))
                 {
                     con.Open();
                     String userId;
-                    string cmdString = "select UserId from userdetails where UserUname = '@userName'";
+                    string cmdString = "select UserId from userdetails where UserUname = @userName";
                     MySqlCommand cmd = new MySqlCommand(cmdString, con);
                     cmd.Parameters.Add(new MySqlParameter("@userName", user.UserName));
                     MySqlDataReader dataset = cmd.ExecuteReader();
+                    dataset.Read();
                     userId = dataset["UserId"].ToString();
+                    dataset.Close();
+                    con.Close();
 
-                    cmdString = "insert into orders(CustomerId, OrderShipName, OrderShipAddress, OrderCity, OrderState, OrderZip, OrderCountry, OrderContactNo, OrderTransactionId) values (@userId, '@recieverName', '@recieverAddr', '@recieverCity', '@recieverState', '@recieverZip', '@recieverCountry', '@recieverContactNo', '@recieverTransactionId')";
+                    con.Open();
+                    cmdString = "insert into orders(`CustomerId`, `OrderShipName`, `OrderShipAddress`, `OrderCity`, `OrderState`, `OrderZip`, `OrderCountry`, `OrderContactNo.`, `OrderTransactionId`)"+
+                        " values (@userId, @recieverName, @recieverAddr, @recieverCity, @recieverState, @recieverZip, @recieverCountry, @recieverContactNo, @recieverTransactionId)";
                     cmd = new MySqlCommand(cmdString, con);
                     cmd.Parameters.Add(new MySqlParameter("@userId", userId));
                     cmd.Parameters.Add(new MySqlParameter("@recieverName", order.ReceiverName));
@@ -633,16 +724,22 @@ namespace DAL
                     cmd.Parameters.Add(new MySqlParameter("@recieverZip", order.ReceiverAddr.ZipCode));
                     cmd.Parameters.Add(new MySqlParameter("@recieverCountry", order.ReceiverAddr.Country));
                     cmd.Parameters.Add(new MySqlParameter("@recieverContactNo", order.ReceiverContactNo));
-                    cmd.Parameters.Add(new MySqlParameter("@recieverTransactionId", order.OrderTransactonId));
+                    cmd.Parameters.Add(new MySqlParameter("@recieverTransactionId", order.OrderTransactionId));
                     cmd.ExecuteNonQuery();
+                    con.Close();
 
+                    con.Open();
                     string orderId;
                     cmdString = "SELECT max(orderid) as orderId FROM bookstore.orders where CustomerId = @userId group by CustomerId";
+                    cmd = new MySqlCommand(cmdString, con);
                     cmd.Parameters.Add(new MySqlParameter("@userId", userId));
                     dataset = cmd.ExecuteReader();
+                    dataset.Read();
                     orderId = dataset["orderId"].ToString();
+                    dataset.Close();
+                    con.Close();
 
-                    IList<Cart> cart = getCartsBook(user);
+                    con.Open();
                     cmdString = "insert into orderdetails values('" + orderId + "','" + cart[0]._Book.BookId + "'," + cart[0].BookQuantity + ")";
                     for (int i = 1;i < cart.Count;i++)
                     {
@@ -650,8 +747,10 @@ namespace DAL
                     }
                     cmd = new MySqlCommand(cmdString, con);
                     cmd.ExecuteNonQuery();
+                    con.Close();
 
-                    cmdString = "delete from cart where CartCusId = '@userId'";
+                    con.Open();
+                    cmdString = "delete from cart where CartCusId = @userId";
                     cmd = new MySqlCommand(cmdString, con);
                     cmd.Parameters.Add(new MySqlParameter("@userId", userId));
                     cmd.ExecuteNonQuery();
@@ -659,7 +758,7 @@ namespace DAL
                     status = true;
                 }
             }
-            catch (Exception ex)
+            catch (SqlException ex)
             {
                 Console.Write(ex);
             }
@@ -791,7 +890,7 @@ namespace DAL
             return orderList;
         }
 
-        public bool createSession(User user)
+        public string createSession(User user)
         {
             string sessionId = null;
             using (MySqlConnection con = new MySqlConnection(conString))
@@ -800,26 +899,62 @@ namespace DAL
                 string cmdString = "SELECT `userdetails`.`UserId` FROM `bookstore`.`userdetails`WHERE userdetails.UserUname = @userName";
                 MySqlCommand cmd = new MySqlCommand(cmdString, con);
                 cmd.Parameters.Add(new MySqlParameter("@userName", user.UserName));
-
                 MySqlDataReader userDetails = cmd.ExecuteReader();
                 if (userDetails.HasRows)
                 {
                     userDetails.Read();
                     string userId = userDetails["UserId"].ToString();
                     userDetails.Close();
-                    cmdString = "INSERT INTO `bookstore`.`sessionlog`(`SessionId`,`SessionExpiryTime`,`SessionUserId`)VALUES(@sessionId,date_add(current_timestamp(), interval 30 minute),@userId)";
-                    cmd = new MySqlCommand(cmdString, con);
-                    cmd.Parameters.Add(new MySqlParameter("@userId", userId));
-                    sessionId = sessionIdGenerator();
-                    cmd.Parameters.Add(new MySqlParameter("@sessionId", sessionId));
-                    if(cmd.ExecuteNonQuery()==1)
-                        user.SessionId = sessionId;
+                    sessionId = getSession(user);
+                    if (sessionId == null)
+                    {
+                        cmdString = "INSERT INTO `bookstore`.`sessionlog`(`SessionId`,`SessionExpiryTime`,`SessionUserId`)VALUES(@sessionId,date_add(current_timestamp(), interval 2 day),@userId)";
+                        cmd = new MySqlCommand(cmdString, con);
+                        cmd.Parameters.Add(new MySqlParameter("@userId", userId));
+                        sessionId = sessionIdGenerator();
+                        cmd.Parameters.Add(new MySqlParameter("@sessionId", sessionId));
+                        if (cmd.ExecuteNonQuery() == 1)
+                            return sessionId;
+                    }
+                    else
+                        return sessionId;
                 }
             }
-            return true;
+            return null;
         }
 
-        public bool checkSession(User user)
+        public string getSession(User user)
+        {
+            string sessionId = null;
+            try
+            {
+                using (MySqlConnection con = new MySqlConnection(conString))
+                {
+                    con.Open();
+                    //check session
+                    string cmdString = "SELECT * FROM `bookstore`.`sessionlog`, `bookstore`.`userdetails` WHERE userdetails.UserUname = @userName AND userdetails.UserId = sessionlog.SessionUserId and `SessionExpiryTime` > current_timestamp()";
+                    MySqlCommand cmd = new MySqlCommand(cmdString, con);
+                    cmd.Parameters.Add(new MySqlParameter("@userName", user.UserName));
+                    MySqlDataReader userDetails = cmd.ExecuteReader();
+                    if (userDetails.HasRows)
+                    {
+                        userDetails.Read();
+                        string userId = userDetails["UserId"].ToString();
+                        sessionId = userDetails["SessionId"].ToString();
+                        userDetails.Close();
+                    }
+                    if (!userDetails.IsClosed)
+                        userDetails.Close();
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+            }
+            return sessionId;
+        }
+
+        public bool checkSession(ref string sessionId)
         {
             bool status = false;
             try
@@ -828,10 +963,9 @@ namespace DAL
                 {
                     con.Open();
                     //check session
-                    string cmdString = "SELECT * FROM `bookstore`.`sessionlog`, `bookstore`.`userdetails` WHERE userdetails.UserUname = @userName AND userdetails.UserId = sessionlog.SessionUserId and sessionlog.SessionId=@sessionId";
+                    string cmdString = "SELECT * FROM `bookstore`.`sessionlog`, `bookstore`.`userdetails` WHERE userdetails.UserId = sessionlog.SessionUserId and sessionlog.SessionId=@sessionId and `SessionExpiryTime` > current_timestamp()";
                     MySqlCommand cmd = new MySqlCommand(cmdString, con);
-                    cmd.Parameters.Add(new MySqlParameter("@userName", user.UserName));
-                    cmd.Parameters.Add(new MySqlParameter("@sessionId", user.SessionId));
+                    cmd.Parameters.Add(new MySqlParameter("@sessionId", sessionId));
                     MySqlDataReader userDetails = cmd.ExecuteReader();
                     if (userDetails.HasRows)
                     {
@@ -839,14 +973,14 @@ namespace DAL
                         string userId = userDetails["UserId"].ToString();
                         userDetails.Close();
                         //update session
-                        cmdString = "UPDATE `bookstore`.`sessionlog` SET `SessionId` = '@newSessionId', `SessionExpiryTime` = date_add(current_timestamp(), interval 30 minute), `SessionUserId` = '@userId' WHERE `SessionId` = '@oldSessionId'"; ;
+                        cmdString = "UPDATE `bookstore`.`sessionlog` SET SessionId = @newSessionId, `SessionExpiryTime` = date_add(current_timestamp(), interval 30 minute) WHERE `SessionId` = @oldSessionId and `SessionUserId` = @userId"; ;
                         cmd = new MySqlCommand(cmdString, con);
                         cmd.Parameters.Add(new MySqlParameter("@userId", userId));
-                        cmd.Parameters.Add(new MySqlParameter("@oldSessionId", user.SessionId));
+                        cmd.Parameters.Add(new MySqlParameter("@oldSessionId", sessionId));
                         string newSessionId = sessionIdGenerator();
                         cmd.Parameters.Add(new MySqlParameter("@newSessionId", newSessionId));
                         cmd.ExecuteNonQuery();
-                        user.SessionId = newSessionId;
+                        sessionId = newSessionId;
                         status = true;
                     }
                     if(!userDetails.IsClosed)
@@ -860,7 +994,7 @@ namespace DAL
             return status;
         }
 
-        public bool endSession(Claim user)
+        public bool endSession(string sessionId)
         {
             bool status = false;
 
@@ -870,10 +1004,9 @@ namespace DAL
                 {
                     con.Open();
                     //check session
-                    string cmdString = "SELECT * FROM `bookstore`.`sessionlog`, `bookstore`.`userdetails` WHERE userdetails.UserUname = @userName AND userdetails.UserId = sessionlog.SessionUserId and sessionlog.SessionId=@sessionId";
+                    string cmdString = "SELECT * FROM `bookstore`.`sessionlog`, `bookstore`.`userdetails` WHERE userdetails.UserId = sessionlog.SessionUserId and sessionlog.SessionId=@sessionId and `SessionExpiryTime` > current_timestamp()";
                     MySqlCommand cmd = new MySqlCommand(cmdString, con);
-                    cmd.Parameters.Add(new MySqlParameter("@userName", user.UserName));
-                    cmd.Parameters.Add(new MySqlParameter("@sessionId", user.SessionId));
+                    cmd.Parameters.Add(new MySqlParameter("@sessionId", sessionId));
                     MySqlDataReader userDetails = cmd.ExecuteReader();
                     if (userDetails.HasRows)
                     {
@@ -881,10 +1014,10 @@ namespace DAL
                         string userId = userDetails["UserId"].ToString();
                         userDetails.Close();
                         //update session
-                        cmdString = "UPDATE `bookstore`.`sessionlog` SET `SessionExpiryTime` = current_timestamp(), `SessionUserId` = '@userId' WHERE `SessionId` = '@oldSessionId'"; ;
+                        cmdString = "UPDATE `bookstore`.`sessionlog` SET `SessionExpiryTime` = current_timestamp() WHERE `SessionUserId` = @userId and `SessionId` = @oldSessionId";
                         cmd = new MySqlCommand(cmdString, con);
                         cmd.Parameters.Add(new MySqlParameter("@userId", userId));
-                        cmd.Parameters.Add(new MySqlParameter("@oldSessionId", user.SessionId));
+                        cmd.Parameters.Add(new MySqlParameter("@oldSessionId", sessionId));
                         cmd.ExecuteNonQuery();
                         status = true;
                     }

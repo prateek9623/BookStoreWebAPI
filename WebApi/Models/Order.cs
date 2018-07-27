@@ -16,7 +16,7 @@ namespace WebApi.Models
         public Address ReceiverAddr { get; set; }
         public string ReceiverContactNo { get; set; }
         public bool OrderShipped { get; set; }
-        public string OrderTransactonId { get; set; }
+        public string OrderTransactionId { get; set; }
 
         public Order(string ReceiverName, Address ReceiverAddr, string ReceiverContactNo, IList<BookCount> OrderedItems, bool OrderShipped, string OrderTransactonId)
         {
@@ -24,7 +24,17 @@ namespace WebApi.Models
             this.ReceiverContactNo = ReceiverContactNo;
             this.ReceiverName = ReceiverName;
             this.OrderedItems = OrderedItems;
-            this.OrderTransactonId = OrderTransactonId;
+            this.OrderTransactionId = OrderTransactonId;
+            this.OrderShipped = OrderShipped;
         }
+
+        public Order(string ReceiverName, Address ReceiverAddr, string ReceiverContactNo, string OrderTransactonId)
+        {
+            this.ReceiverAddr = ReceiverAddr;
+            this.ReceiverContactNo = ReceiverContactNo;
+            this.ReceiverName = ReceiverName;
+            this.OrderTransactionId = OrderTransactonId;
+        }
+
     }
 }

@@ -1,3 +1,49 @@
-<p>
-  admin-books works!
-</p>
+<h1>Admin's Page</h1>
+<a routerLink="new" class="btn btn-primary">New Book</a>
+<br>
+<mat-form-field>
+  <input matInput (keyup)="applyFilter($event.target.value)" placeholder="Filter">
+</mat-form-field>
+
+<div class="mat-elevation-z8">
+  <table mat-table [dataSource]="bookListDataSource" matSort>
+
+    <ng-container matColumnDef="id">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header> ID </th>
+      <td mat-cell *matCellDef="let row"> {{row.BookId}} </td>
+    </ng-container>
+    <ng-container matColumnDef="title">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header> Title </th>
+      <td mat-cell *matCellDef="let row"> {{row.BookTitle}} </td>
+    </ng-container>
+    <ng-container matColumnDef="genre">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header> Genre </th>
+      <td mat-cell *matCellDef="let row"> {{row.BookGenre.GenreName}} </td>
+    </ng-container>
+    <ng-container matColumnDef="author">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header> Author </th>
+      <td mat-cell *matCellDef="let row"> {{row.BookAuthor.AuthorName}} </td>
+    </ng-container>
+    <ng-container matColumnDef="publisher">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header> Publisher </th>
+      <td mat-cell *matCellDef="let row"> {{row.BookPublisher.PublisherName}} </td>
+    </ng-container>
+    <ng-container matColumnDef="cost">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header> Cost </th>
+      <td mat-cell *matCellDef="let row"> {{row.BookCost}} </td>
+    </ng-container>
+    <ng-container matColumnDef="stock">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header> Stock </th>
+      <td mat-cell *matCellDef="let row"> {{row.BookStock}} </td>
+    </ng-container>
+    <ng-container matColumnDef="editLink">
+        <th mat-header-cell *matHeaderCellDef> Edit </th>
+        <td mat-cell *matCellDef="let row"> <a [routerLink]="['/admin/book/',row.BookId]">Edit</a> </td>
+    </ng-container>
+    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+    <tr mat-row *matRowDef="let row; columns: displayedColumns;">
+    </tr>
+  </table>
+
+  <mat-paginator [pageSizeOptions]="[5, 10, 25, 100]"></mat-paginator>
+</div>

@@ -12,6 +12,8 @@ using Newtonsoft.Json;
 using System.Web;
 using System.Web.Script.Serialization;
 using WebApi.Filters;
+using System.Net.Http.Headers;
+using WebApi.BLL;
 
 namespace WebApi.Controllers
 {
@@ -29,16 +31,13 @@ namespace WebApi.Controllers
         public HttpResponseMessage  ValidateUser(JObject obj)
         {
 
-            string username = obj.Value<String>("userName");
+            string username = obj.Value<String>("username");
             string password = obj.Value<String>("password");
             User user = new User(username);
-            if (DBCon.validateUser(user, password)){
-                DBCon.createSession(user);
-                if (DBCon.validateAdmin(user))
-                {
-                    user.isAdmin = true;
-                }
-                return Request.CreateResponse(HttpStatusCode.Accepted, user);
+            if (DBCon.validateUser(username, password)){
+                user = UserBLL.getUser(DBCon.createSession(user));
+                HttpResponseMessage httpResponse = Request.CreateResponse(HttpStatusCode.Accepted, user);
+                return httpResponse;
             }
             return new HttpResponseMessage(HttpStatusCode.Unauthorized);
         }
@@ -48,26 +47,31 @@ namespace WebApi.Controllers
         [Route("api/user/registration")]
         public HttpResponseMessage Registeration(JObject obj)
         {
+            
             string userName = obj.Value<String>("userName");
             string frontName = obj.Value<String>("firstName");
             string lastName = obj.Value<String>("lastName");
             string email = obj.Value<String>("email");
             string password = obj.Value<String>("password");
             User newUser = new User(userName, frontName, lastName, email);
-            if (DBCon.addUser(newUser, password)){
-                DBCon.createSession(newUser);
-                return Request.CreateResponse(HttpStatusCode.Accepted, newUser);
+            if (DBCon.addUser(newUser, password))
+            {
+                newUser.SessionId = DBCon.createSession(newUser);
+                HttpResponseMessage httpResponse = Request.CreateResponse(HttpStatusCode.Accepted,  newUser);
+                return httpResponse;
             }
             return new HttpResponseMessage(HttpStatusCode.BadRequest);
         }
         
         [HttpPost]
         [Route("api/user/logout")]
-        public HttpResponseMessage LogOut(Claim claim)
+        public HttpResponseMessage LogOut()
         {
-            if (DBCon.endSession(claim))
+            string sessionId = Request.Headers.Authorization.Parameter;
+            if (sessionId != null&&DBCon.endSession(sessionId))
             {
-                return new HttpResponseMessage(HttpStatusCode.Accepted);
+                HttpResponseMessage httpResponse = Request.CreateResponse(HttpStatusCode.Accepted);
+                return httpResponse;
             }
             return new HttpResponseMessage(HttpStatusCode.BadRequest);
         }
@@ -75,15 +79,16 @@ namespace WebApi.Controllers
         [HttpPost]
         [ResponseType(typeof(User))]
         [Route("api/user/details")]
-        public HttpResponseMessage Details(Claim claim)
+        public HttpResponseMessage Details()
         {
-            User user = new User(claim.UserName, claim.SessionId);
-
-            if (DBCon.checkSession(user))
+            string sessionId = Request.Headers.Authorization.Parameter;
+            if (sessionId!=null)
             {
-                return Request.CreateResponse(HttpStatusCode.Accepted, DBCon.getUserDetails(user));
+                User user = UserBLL.getUser(sessionId);
+                HttpResponseMessage httpResponse = Request.CreateResponse(HttpStatusCode.Accepted,user);
+                return httpResponse;
             }
-            return new HttpResponseMessage(HttpStatusCode.BadRequest);
+            return new HttpResponseMessage(HttpStatusCode.Unauthorized);
         }
     }
 

@@ -26,18 +26,18 @@ namespace WebApi.Controllers
 
         [HttpGet]
         [Route("api/Genres/")]
-        [ResponseType(typeof(Genre[]))]
+        [ResponseType(typeof(string[]))]
         public HttpResponseMessage Genres()
         {
-            return Request.CreateResponse(HttpStatusCode.Accepted, DBCon.getGenre().ToArray<Genre>());
+            return Request.CreateResponse(HttpStatusCode.Accepted, DBCon.getGenre().ToArray<string>());
         }
 
         [HttpGet]
         [Route("api/Publishers/")]
-        [ResponseType(typeof(Publisher[]))]
+        [ResponseType(typeof(string[]))]
         public HttpResponseMessage Publishers()
         {
-            return Request.CreateResponse(HttpStatusCode.Accepted, DBCon.getPublisher().ToArray<Publisher>());
+            return Request.CreateResponse(HttpStatusCode.Accepted, DBCon.getPublisher().ToArray<string>());
         }
 
         [HttpGet]
@@ -45,7 +45,7 @@ namespace WebApi.Controllers
         [ResponseType(typeof(Author[]))]
         public HttpResponseMessage Authors()
         {
-            return Request.CreateResponse(HttpStatusCode.Accepted, DBCon.getAuthors().ToArray<Author>());
+            return Request.CreateResponse(HttpStatusCode.Accepted, DBCon.getAuthors().ToArray<string>());
         }
 
         [HttpGet]
@@ -69,33 +69,38 @@ namespace WebApi.Controllers
         [ResponseType(typeof(User))]
         public HttpResponseMessage registerBook(JObject obj)
         {
-            string username = obj.Value<String>("UserName");
-            string sessionid = obj.Value<String>("SessionId");
-            User user = new User(username,sessionid);
-            if (DBCon.checkSession(user) && DBCon.validateAdmin(user))
+            string sessionId = Request.Headers.Authorization.Parameter;
+            if (DBCon.checkSession(ref sessionId) && sessionId!= null)
             {
-                string bookTitle = obj.Value<String>("title");
-                string bookGenre = obj.Value<String>("genre");
-                string bookAuthor = obj.Value<String>("author");
-                string bookDescription = obj.Value<String>("description");
-                string bookPublisher = obj.Value<String>("publisher");
-                string bookThumb = obj.Value<String>("imageurl");
-                double bookCost;
-                int bookStock;
-                try
+                User user = UserBLL.getUser(sessionId);
+                if (user.isAdmin)
                 {
-                    bookCost = double.Parse(obj.Value<String>("cost"));
-                    bookStock = int.Parse(obj.Value<String>("stock"));
+                    string bookTitle = obj.Value<String>("title");
+                    string bookGenre = obj.Value<String>("genre");
+                    string bookAuthor = obj.Value<String>("author");
+                    string bookDescription = obj.Value<String>("description");
+                    string bookPublisher = obj.Value<String>("publisher");
+                    string bookThumb = obj.Value<String>("imageurl");
+                    double bookCost;
+                    int bookStock;
+                    try
+                    {
+                        bookCost = double.Parse(obj.Value<String>("cost"));
+                        bookStock = int.Parse(obj.Value<String>("stock"));
+                    }
+                    catch
+                    {
+                        return Request.CreateResponse(HttpStatusCode.NotAcceptable, user);
+                    }
+                    if (bookCon.addBook(new Book(bookTitle, new Genre(bookGenre), new Author(bookAuthor), bookDescription, new Publisher(bookPublisher), bookCost, bookThumb, bookStock)))
+                        return Request.CreateResponse(HttpStatusCode.Accepted, user);
+                    else
+                        return Request.CreateResponse(HttpStatusCode.NotAcceptable, user);
                 }
-                catch
-                {
-                    return Request.CreateResponse(HttpStatusCode.NotAcceptable, user);
-                }
-                DBCon.getUserDetails(user);
-                if (bookCon.addBook(new Book(bookTitle, new Genre(bookGenre), new Author(bookAuthor), bookDescription, new Publisher(bookPublisher), bookCost,bookThumb, bookStock)))
-                    return Request.CreateResponse(HttpStatusCode.Accepted,user);
                 else
-                    return Request.CreateResponse(HttpStatusCode.NotAcceptable, user);
+                {
+                    return Request.CreateResponse(HttpStatusCode.Unauthorized);
+                }
             }
             else
             {
@@ -103,5 +108,48 @@ namespace WebApi.Controllers
             }
         }
 
+        [HttpPut]
+        [Route("api/Book")]
+        public HttpResponseMessage updateBook(JObject obj)
+        {
+            string sessionId = Request.Headers.Authorization.Parameter;
+            if (DBCon.checkSession(ref sessionId) && sessionId != null)
+            {
+                User user = UserBLL.getUser(sessionId);
+                if (user.isAdmin)
+                {
+                    string bookId = obj.Value<String>("id");
+                    string bookTitle = obj.Value<String>("title");
+                    string bookGenre = obj.Value<String>("genre");
+                    string bookAuthor = obj.Value<String>("author");
+                    string bookDescription = obj.Value<String>("description");
+                    string bookPublisher = obj.Value<String>("publisher");
+                    string bookThumb = obj.Value<String>("imageurl");
+                    double bookCost;
+                    int bookStock;
+                    try
+                    {
+                        bookCost = double.Parse(obj.Value<String>("cost"));
+                        bookStock = int.Parse(obj.Value<String>("stock"));
+                    }
+                    catch
+                    {
+                        return Request.CreateResponse(HttpStatusCode.NotAcceptable, user);
+                    }
+                    if (bookCon.updateBook(new Book(bookId,bookTitle, new Genre(bookGenre), new Author(bookAuthor), bookDescription, new Publisher(bookPublisher), bookCost, bookThumb, bookStock)))
+                        return Request.CreateResponse(HttpStatusCode.Accepted, user);
+                    else
+                        return Request.CreateResponse(HttpStatusCode.NotAcceptable, user);
+                }
+                else
+                {
+                    return Request.CreateResponse(HttpStatusCode.Unauthorized);
+                }
+            }
+            else
+            {
+                return Request.CreateResponse(HttpStatusCode.Unauthorized);
+            }
+        }
     }
 }
