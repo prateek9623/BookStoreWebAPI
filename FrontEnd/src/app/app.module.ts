@@ -16,6 +16,7 @@ import { MatDialogModule } from '@angular/material/dialog';
 import { MatTableModule } from '@angular/material/table';
 import { MatBadgeModule } from '@angular/material/badge';
 import { MatExpansionModule } from '@angular/material/expansion';
+import { MatStepperModule } from '@angular/material/stepper';
 
 import { AppComponent } from './app.component';
 import { BsNavbarComponent } from './bs-navbar/bs-navbar.component';
@@ -35,6 +36,13 @@ import { AuthGuardService } from './shared/services/auth-guard.service';
 import { AdminAuthGuardService } from './shared/services/admin-auth-guard.service';
 import { BookFormComponent } from './admin/book-form/book-form.component';
 import { BookCardComponent } from './book-card/book-card.component';
+import { ShoppingCartSummaryComponent } from './shopping-cart-summary/shopping-cart-summary.component';
+import { ShippingFormComponent } from './shipping-form/shipping-form.component';
+import { BookComponent } from './book/book.component';
+import { CartService } from './shared/services/cart.service';
+import { OrderService } from './shared/services/order.service';
+import { BookService } from './shared/services/book.service';
+import { MyOrderComponent } from './my-order/my-order.component';
 // import { RegisterComponent } from './user-authentication/register/register.component';
 
 @NgModule({
@@ -52,7 +60,11 @@ import { BookCardComponent } from './book-card/book-card.component';
     LoginComponent,
     EqualValidator,
     BookFormComponent,
-    BookCardComponent
+    BookCardComponent,
+    ShoppingCartSummaryComponent,
+    ShippingFormComponent,
+    BookComponent,
+    MyOrderComponent
   ],
   imports: [
     BrowserModule,
@@ -60,15 +72,17 @@ import { BookCardComponent } from './book-card/book-card.component';
     ReactiveFormsModule,
     BrowserAnimationsModule, MatIconModule, MatTabsModule, MatCardModule, MatButtonModule, MatFormFieldModule, MatInputModule,
     MatTableModule, MatPaginatorModule, MatSortModule, MatSnackBarModule, MatListModule,
-    MatAutocompleteModule, MatBadgeModule, MatExpansionModule,
+    MatAutocompleteModule, MatBadgeModule, MatExpansionModule, MatStepperModule,
     HttpClientModule,
     NgbModule.forRoot(),
     RouterModule.forRoot([
       { path: '', component: BooksComponent },
       { path: 'books', component: BooksComponent },
-      { path: 'shopping-cart', component: ShoppingCartComponent },
       { path: 'login', component: LoginComponent },
+      { path: 'book', component: BookComponent },
 
+      { path: 'my/order', component: MyOrderComponent, canActivate: [AuthGuardService] },
+      { path: 'shopping-cart', component: ShoppingCartComponent, canActivate: [AuthGuardService] },
       { path: 'check-out', component: CheckOutComponent, canActivate: [AuthGuardService] },
       { path: 'order-success', component: OrderSuccessComponent, canActivate: [AuthGuardService] },
       { path: 'my/orders', component: MyOrdersComponent, canActivate: [AuthGuardService] },
@@ -78,7 +92,7 @@ import { BookCardComponent } from './book-card/book-card.component';
       { path: 'admin/books', component: AdminBooksComponent, canActivate: [AuthGuardService, AdminAuthGuardService] }
     ])
   ],
-  providers: [UserAuthenticationService, AuthGuardService, AdminAuthGuardService, CookieService],
+  providers: [UserAuthenticationService, CartService, OrderService, BookService, AuthGuardService, AdminAuthGuardService, CookieService],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

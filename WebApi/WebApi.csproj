@@ -127,6 +127,7 @@
     <Compile Include="App_Start\WebApiConfig.cs" />
     <Compile Include="BLL\BookBLL.cs" />
     <Compile Include="BLL\CartBLL.cs" />
+    <Compile Include="BLL\OrderBLL.cs" />
     <Compile Include="BLL\UserBLL.cs" />
     <Compile Include="Controllers\BookController.cs" />
     <Compile Include="Controllers\CartController.cs" />

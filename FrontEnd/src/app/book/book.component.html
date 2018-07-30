@@ -1,0 +1,75 @@
+<div class="container">
+  <div class="row">
+    <div class="col-md-5" style="padding: 2rem; height: 40rem;">
+      <mat-card>
+        <mat-card-content>
+          <img class="m-auto" mat-card-image [src]="book.BookThumb" style=" height: 30rem; width: 100%;">
+        </mat-card-content>
+        <mat-card-actions class="card-footer">
+          <button *ngIf="cart.getQuantity(book)===0; else updateQuantity" mat-raised-button class="btn-block" color="primary" (click)="addToCart(book)">Add to cart</button>
+          <ng-template #updateQuantity>
+            <div class="row no-gutters">
+              <div class="col-2">
+                <button (click)="removeFromCart(book)" class="btn btn-secondary btn-block">-</button>
+              </div>
+              <div class="col text-center quantity">
+                {{cart.getQuantity(book)}} in cart
+              </div>
+              <div class="col-2">
+                <button (click)="addToCart(book)" class="btn btn-secondary btn-block">+</button>
+              </div>
+            </div>
+          </ng-template>
+        </mat-card-actions>
+      </mat-card>
+    </div>
+    <div class="col-md-7">
+      <mat-card class="gridColumn card d-flex">
+        <h5>{{book.BookTitle}}</h5>
+        <mat-card-header>
+          <mat-card-subtitle>{{book.BookAuthor.AuthorName}}</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="d-flex justify-content-between">
+            <div>
+              {{book.BookCost | currency: 'INR'}}
+            </div>
+            <div>
+              Rating:
+              <mat-icon [matBadge]="book.BookRating" matBadgeColor="accent">star</mat-icon>
+            </div>
+          </div>
+          <div style="padding: 1rem;">
+            <mat-divider>
+            </mat-divider>
+          </div>
+          <div class="row" style="margin-bottom: 1rem;">
+            <div style="min-width: 100px;" class="col-2">
+              Genre:
+            </div>
+            <div class="col-9">
+              {{ book.BookGenre.GenreName }}
+            </div>
+          </div>
+          <div class="row" style="margin-bottom: 1rem;">
+            <div style="min-width: 100px;" class="col-2">
+              Author:
+            </div>
+            <div class="col-9">
+              {{ book.BookAuthor.AuthorName }}
+            </div>
+          </div>
+          <div class="row" style="margin-bottom: 1rem;">
+            <div style="min-width: 110px;" class="col-2">
+              Description:
+            </div>
+            <div class="col-9">
+              {{ book.BookDescription }}
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+    </div>
+  </div>
+</div>

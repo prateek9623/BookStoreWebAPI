@@ -1,0 +1,16 @@
+.card-footer {
+  padding: 0;
+  position: sticky;
+}
+
+.quantity {
+  height: 37px;
+  line-height: 37px;
+}
+
+.expanded-btn {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+}

@@ -31,8 +31,8 @@ export class BooksComponent implements OnInit {
 
   async ngOnInit() {
     this.user$ = this.userService.getUser();
-    this.booksService.getBooks().pipe(switchMap(books => {
-      this.books = books;
+    this.booksService.getBooks().pipe(switchMap((books: Book[]) => {
+      this.books = books.filter(b => b.BookStock > 1);
       return this.route.queryParamMap;
     })).subscribe(params => {
       this.genre = params.get('genre');

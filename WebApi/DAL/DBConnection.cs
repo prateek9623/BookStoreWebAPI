@@ -789,7 +789,7 @@ namespace DAL
                         string orderZip = userOrderDetails["OrderZip"].ToString();
                         string orderCountry = userOrderDetails["OrderCountry"].ToString();
                         string orderContactNo = userOrderDetails["OrderContactNo."].ToString();
-                        string orderData = userOrderDetails["OrderDate"].ToString();
+                        DateTime orderDate = userOrderDetails.GetDateTime("OrderDate");
                         bool orderShipped = userOrderDetails["OrderShipped"].ToString().Contains("1");
                         string orderTransactionId = userOrderDetails["OrderTransactionId"].ToString();
                         Address address = new Address(orderShipAddress, orderCity, orderState, orderZip, orderCountry);
@@ -815,13 +815,19 @@ namespace DAL
                                 }
                             }
 
-                            foreach(User user in userList)
+                            
+                        }
+                        foreach (User user in userList)
+                        {
+                            if (user.UserName == customerUserName)
                             {
-                                if(user.UserName == customerUserName)
-                                {
-                                    orderList.Add(user, new Order(orderShipName, address, orderContactNo, bookList1, orderShipped, orderTransactionId));
-                                    break;
-                                }
+                                Order o = new Order(orderShipName, address, orderContactNo, bookList1, orderShipped, orderTransactionId);
+                                o.OrderId = orderId;
+                                o.OrderPlaceTime = orderDate;
+
+                                orderList.Add(user, o);
+                                
+                                break;
                             }
                         }
 
@@ -854,7 +860,7 @@ namespace DAL
                         string orderZip = userOrderDetails["OrderZip"].ToString();
                         string orderCountry = userOrderDetails["OrderCountry"].ToString();
                         string orderContactNo = userOrderDetails["OrderContactNo."].ToString();
-                        string orderData = userOrderDetails["OrderDate"].ToString();
+                        DateTime orderDate = userOrderDetails.GetDateTime("OrderDate");
                         bool orderShipped = userOrderDetails["OrderShipped"].ToString().Contains("1");
                         string orderTransactionId = userOrderDetails["OrderTransactionId"].ToString();
                         Address address = new Address(orderShipAddress, orderCity, orderState, orderZip, orderCountry);
@@ -881,7 +887,10 @@ namespace DAL
                             }
 
                         }
-                        orderList.Add(new Order(orderShipName, address, orderContactNo, bookList1, orderShipped, orderTransactionId));
+                        Order temp = new Order(orderShipName, address, orderContactNo, bookList1, orderShipped, orderTransactionId);
+                        temp.OrderId = orderId;
+                        temp.OrderPlaceTime = orderDate;
+                        orderList.Add(temp);
                     }
                 }
                 userOrderDetails.Close();

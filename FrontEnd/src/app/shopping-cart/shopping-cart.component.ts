@@ -11,14 +11,13 @@ import { Book, BookCount } from '../shared/models/book';
 })
 export class ShoppingCartComponent implements OnInit {
 
-  cart: Cart = new Cart([]);
+  cart$: Observable<Cart>;
 
   constructor(private cartService: CartService) {
-    this.cartService.getCart().subscribe(x => { this.cart = x; });
   }
 
-  ngOnInit() {
-    this.cartService.getCart().subscribe(x => { this.cart = x; });
+  async ngOnInit() {
+    this.cart$ = this.cartService.getCart();
   }
 
   addToCart(book: Book) {

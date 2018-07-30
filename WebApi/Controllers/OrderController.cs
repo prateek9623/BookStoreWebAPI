@@ -28,14 +28,16 @@ namespace WebApi.Controllers
             {
                 User user = UserBLL.getUser(sessionId);
 
-                string receiverName = obj.Value<string>("ReceiverName");
-                string receiverContactNo = obj.Value<string>("ReceiverContactNo");
-                string orderTransactionId = obj.Value<string>("OrderTransactionId");
-                Address address = obj.Value<JObject>("ReceiverAddr").ToObject<Address>();
+                //string receiverName = obj.Value<string>("ReceiverName");
+                //string receiverContactNo = obj.Value<string>("ReceiverContactNo");
+                //string orderTransactionId = obj.Value<string>("OrderTransactionId");
+                //Address address = obj.Value<JObject>("ReceiverAddr").ToObject<Address>();
 
-                Order order = new Order(receiverName, address, receiverContactNo, orderTransactionId);
-                DBConnection.getObject().addOrder(user, order);
-                return Request.CreateResponse(HttpStatusCode.Accepted, UserBLL.getUser(sessionId));
+                Order order = obj.ToObject<Order>();
+                if (OrderBLL.addOrder(user, order))
+                    return Request.CreateResponse(HttpStatusCode.Accepted, UserBLL.getUser(sessionId));
+                else
+                    return Request.CreateResponse(HttpStatusCode.BadRequest, UserBLL.getUser(sessionId));
             }
             return new HttpResponseMessage(HttpStatusCode.Unauthorized);
         }

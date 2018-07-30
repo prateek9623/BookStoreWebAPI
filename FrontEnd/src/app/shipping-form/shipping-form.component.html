@@ -1,0 +1,84 @@
+<form #shippingForm="ngForm" (ngSubmit)="PlaceOrder(shippingForm)">
+  <mat-vertical-stepper [linear]="false" #stepper>
+    <mat-step>
+      <ng-template matStepLabel>Fill out your name</ng-template>
+      <div class="form-row">
+        <mat-form-field class="col-lg-6">
+          <input matInput type="text" id="receiverName" class="validate" required name="ReceiverName" [(ngModel)]="orderDetails.ReceiverName"
+            #ReceiverName="ngModel" placeholder="Receiver Name">
+          <mat-error *ngIf="ReceiverName.valid || (ReceiverName.pristine && !shippingForm.submitted)">
+            Receiver Name is required.
+          </mat-error>
+        </mat-form-field>
+        <mat-form-field class="col-lg-6">
+          <span matPrefix>+91 &nbsp;</span>
+          <input type="tel" matInput required placeholder="Receiver Contact No" class="validate" id="receiverContactNo" name="ReceiverContactNo"
+            #ReceiverContactNo="ngModel" [(ngModel)]="orderDetails.ReceiverContactNo" pattern="^\d{10}$">
+          <mat-error *ngIf="ReceiverContactNo.valid || (ReceiverContactNo.pristine && !shippingForm.submitted)">
+            Enter Valid Contact No.
+          </mat-error>
+        </mat-form-field>
+      </div>
+      <div>
+        <button mat-button matStepperNext type="button">Next</button>
+      </div>
+    </mat-step>
+    <mat-step>
+      <ng-template matStepLabel>Fill out your address</ng-template>
+      <div class="form-row">
+        <mat-form-field class="col-lg-6">
+          <input matInput placeholder="Country" required id="receiverCountry" name="receiverCountry" #receiverCountry="ngModel" [(ngModel)]="orderDetails.ReceiverAddr.Country">
+        </mat-form-field>
+        <mat-form-field class="col-lg-6">
+          <input matInput placeholder="State" required id="receiverState" name="receiverState" #receiverState="ngModel" [(ngModel)]="orderDetails.ReceiverAddr.State">
+        </mat-form-field>
+        <mat-form-field class="col-lg-6">
+          <input matInput placeholder="City" required id="receiverCity" name="receiverCity" #receiverCity="ngModel" [(ngModel)]="orderDetails.ReceiverAddr.City">
+        </mat-form-field>
+        <mat-form-field class="col-lg-6">
+          <input matInput placeholder="Zip Code" type="tel" pattern="^\d{6}$" required id="receiverZipCode" name="receiverZipCode"
+            #receiverZipCode="ngModel" [(ngModel)]="orderDetails.ReceiverAddr.ZipCode" class="validate">
+          <mat-error *ngIf="receiverZipCode.valid || (receiverZipCode.pristine && !shippingForm.submitted)">
+            Enter Valid Zip Code.
+          </mat-error>
+        </mat-form-field>
+        <mat-form-field class="col-lg-12">
+          <input matInput placeholder="Local Address" required id="receiverLocalAddr" name="receiverLocalAddr" #receiverLocalAddr="ngModel"
+            [(ngModel)]="orderDetails.ReceiverAddr.LocalAddr">
+        </mat-form-field>
+      </div>
+      <div class="form-row">
+        <div class="col-lg-6">
+          <button mat-button matStepperPrevious type="button">Back</button>
+        </div>
+        <div class="col-lg-6">
+          <button mat-button matStepperNext type="button">Next</button>
+        </div>
+      </div>
+    </mat-step>
+    <mat-step>
+      <ng-template matStepLabel>Payment Details</ng-template>
+      <mat-form-field>
+        <input matInput placeholder="Transaction ID" required id="orderTransactionId" name="orderTransactionId" #orderTransactionId="ngModel"
+          [(ngModel)]="orderDetails.OrderTransactionId">
+      </mat-form-field>
+      <div class="form-row">
+        <div class="col-lg-6">
+          <button mat-button matStepperPrevious type="button">Back</button>
+        </div>
+        <div class="col-lg-6">
+          <button mat-button matStepperNext type="button">Next</button>
+        </div>
+      </div>
+    </mat-step>
+    <mat-step>
+      <ng-template matStepLabel>Done</ng-template>
+      You are now done.
+      <div>
+        <button mat-button matStepperPrevious type="button">Back</button>
+        <button mat-button (click)="stepper.reset()" type="button">Reset</button>
+        <button mat-raised-button type="submit" color="primary" [disabled]="!shippingForm.valid">Place Order</button>
+      </div>
+    </mat-step>
+  </mat-vertical-stepper>
+</form>

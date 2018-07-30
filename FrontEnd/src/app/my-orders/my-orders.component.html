@@ -1,3 +1,36 @@
-<p>
-  my-orders works!
-</p>
+<div class="container">
+  <div *ngIf="order$ | async as order ">
+    <div class="list-group">
+      <div class="list-group-item" *ngFor="let o of order; index as i" style="padding: 2rem;">
+<a routerLink="/my/order/" [queryParams]="{order_id:o.OrderId}">Show Details</a>
+        <div class="list-group">
+          <div class="list-group-item" *ngFor="let item of o.OrderedItems">
+            <div class="row">
+              <div class="col-1">
+                <div [style.backgroundImage]="'url(' + item._Book.BookThumb + ')'" class="thumbnail">
+                </div>
+              </div>
+              <div class="col-3">
+                {{item._Book.BookTitle}}
+              </div>
+              <div class="col-1" style="vertical-align: center">
+                X {{item.BookQuantity}}
+              </div>
+              <div class="col-7" style="text-align: right">
+                {{ item.BookQuantity*item._Book.BookCost | currency: 'INR'}}
+              </div>
+            </div>
+          </div>
+          <div class="card-text d-flex justify-content-between">
+            <div>
+              Placed On: {{o.OrderPlaceTime | date:'hh:mm aaa dd-MM-yy'}}
+            </div>
+            <div>
+              Order Total: {{ totalPrice(o.OrderedItems) }}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

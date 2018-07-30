@@ -1,4 +1,4 @@
-<div class="row container-fluid">
+<div class="row container-fluid ml-auto mr-auto">
   <div class="" style="width: 300px;">
     <mat-card class="sticky-top">
       <mat-list>
@@ -45,7 +45,7 @@
         <div class="gridColumn card d-flex">
           <img class="card-img-top" mat-card-image [src]="b.BookThumb" [alt]="b.BookTitle">
           <div class="card-body">
-            <a href="https://www.google.com">
+            <a routerLink="/book" [queryParams]="{ id: b.BookId }">
               <h5 class="card-title">{{b.BookTitle}}</h5>
             </a>
             <h6 class="card-subtitle mb-2 text-muted">{{b.BookAuthor.AuthorName}}</h6>

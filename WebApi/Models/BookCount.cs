@@ -7,13 +7,13 @@ namespace WebApi.Models
 {
     public class BookCount
     {
-        public Book BookItem { get; set; }
-        public int Count { get; set; }
+        public Book _Book { get; set; }
+        public int BookQuantity { get; set; }
 
         public BookCount(Book _book, int _count)
         {
-            BookItem = _book;
-            Count = _count;
+            _Book = _book;
+            BookQuantity = _count;
         }
     }
 }

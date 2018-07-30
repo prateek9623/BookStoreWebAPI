@@ -8,6 +8,7 @@ import { User } from '../models/user';
 import { UserAuthenticationService } from './user-authentication.service';
 import { Cart } from '../models/cart';
 import { Router } from '@angular/router';
+import { switchMap } from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root'
@@ -16,7 +17,11 @@ export class CartService {
   readonly rootUrl = environment.webApiUrl;
   public cart$ = new Subject<Cart>();
   constructor(private http: HttpClient, private userService: UserAuthenticationService
-    , private cookieService: CookieService, private router: Router) { }
+    , private cookieService: CookieService, private router: Router) {
+    userService.getUser().subscribe((user: User) => {
+      this.cart$.next(new Cart(user.CartBookList));
+    });
+  }
 
   addToCart(cartItem: BookCount) {
     const sessionId = this.cookieService.get('sessionId');
@@ -42,14 +47,22 @@ export class CartService {
   }
 
   getCart(): Observable<Cart> {
-    this.userService.user$.subscribe((user: User) => {
+    return this.userService.user$.pipe(switchMap((user: User) => {
       if (user !== null) {
         this.cart$.next(new Cart(user.CartBookList));
       } else {
         this.cart$.next(new Cart([]));
       }
-    });
-    return this.cart$.asObservable();
+      return this.cart$.asObservable();
+    }));
+    // this.userService.user$.subscribe((user: User) => {
+    //   if (user !== null) {
+    //     this.cart$.next(new Cart(user.CartBookList));
+    //   } else {
+    //     this.cart$.next(new Cart([]));
+    //   }
+    // });
+    // return this.cart$.asObservable();
   }
 
   clearCart() {

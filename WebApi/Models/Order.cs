@@ -11,12 +11,16 @@ namespace WebApi.Models
     {
  
         //books, quantity
+        public string OrderId { get; set; }
         public IList<BookCount> OrderedItems { get; set;}
         public string ReceiverName { get; set; }
         public Address ReceiverAddr { get; set; }
         public string ReceiverContactNo { get; set; }
         public bool OrderShipped { get; set; }
         public string OrderTransactionId { get; set; }
+        public DateTime OrderPlaceTime { get; set; }
+
+        public Order() { }
 
         public Order(string ReceiverName, Address ReceiverAddr, string ReceiverContactNo, IList<BookCount> OrderedItems, bool OrderShipped, string OrderTransactonId)
         {
